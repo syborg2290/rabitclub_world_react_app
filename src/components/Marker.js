@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { IoLocation } from "react-icons/io5";
+import { IoRadioButtonOn } from "react-icons/io5";
 import { Marker } from "react-map-gl";
 import NewPinModalContext from "../context/NewPinModalContext";
 
@@ -28,13 +28,14 @@ const MapMarker = (props) => {
           modalContext.setViewport({
             latitude: e.lngLat.lat,
             longitude: e.lngLat.lng,
-            zoom: 3,
+            zoom: 10,
           });
         }}
       >
-        <IoLocation
+        <IoRadioButtonOn
           color="#F90716"
-          style={{ fontSize: props.viewport.zoom * 10 }}
+          className="animate-pulse hover:animate-none"
+          style={{ fontSize: props.viewport.zoom * 5 }}
         />
       </Marker>
     </div>

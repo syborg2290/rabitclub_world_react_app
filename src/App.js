@@ -7,13 +7,16 @@ import { getUserService, logoutService } from "./services/user";
 import UserContext from "./context/UserContext";
 import Routing from "./routing";
 import NewPinModalContext from "./context/NewPinModalContext";
+import PreviousActionContext from "./context/PreviousActionContext";
 
 function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   // const [showNewPinModal, setShowNewPinModal] = useState(false);
+  const [previousAction, setPreviousAction] = useState({});
   const [viewport, setViewport] = useState({});
   const [coordinates, setCoordinates] = useState({});
   const [user, setUser] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     getUser();
@@ -23,13 +26,15 @@ function App() {
   const getUser = async () => {
     const res = await getUserService();
     if (res.status === true) {
-      setUser(res.result);
+      setUserId(res.result.id);
+      setUser(res.result.username);
     }
   };
 
   const logout = async () => {
     await logoutService();
     setUser(null);
+    setUserId(null);
   };
 
   return (
@@ -52,15 +57,24 @@ function App() {
         <UserContext.Provider
           value={{
             user,
+            userId,
             logout,
             setUser,
+            setUserId,
           }}
         >
-          <BrowserRouter>
-            <Routing />
-            <AuthModal />
-            {/* <NewPinModal /> */}
-          </BrowserRouter>
+          <PreviousActionContext.Provider
+            value={{
+              setPreviousAction,
+              previousAction,
+            }}
+          >
+            <BrowserRouter>
+              <Routing />
+              <AuthModal />
+              {/* <NewPinModal /> */}
+            </BrowserRouter>
+          </PreviousActionContext.Provider>
         </UserContext.Provider>
       </NewPinModalContext.Provider>
     </AuthModalContext.Provider>

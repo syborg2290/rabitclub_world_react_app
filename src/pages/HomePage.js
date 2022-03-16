@@ -5,12 +5,28 @@ import MapMarker from "../components/Marker";
 import NewPinModalContext from "../context/NewPinModalContext";
 import UtilityBox from "../components/UtilityBox";
 import Spinner from "../components/common/loaders/Spinner";
+import { gun } from "../config";
+import PinMarker from "../components/PinMarker";
 
 const HomePage = () => {
   const modalContext = useContext(NewPinModalContext);
   const [isLoading, setIsLoading] = useState(true);
+  const [allPins, setAllPins] = useState([]);
 
   useEffect(() => {
+    gun
+      .get("pins")
+      .map()
+      .on((data, key) => {
+        if (allPins.filter((e) => e.key === key).length <= 0) {
+          allPins.push({
+            key: key,
+            data: data,
+          });
+          setAllPins([...allPins]);
+        }
+      });
+
     navigator.geolocation.getCurrentPosition(function (position) {
       modalContext.setViewport({
         latitude: position.coords.latitude,
@@ -51,7 +67,7 @@ const HomePage = () => {
               modalContext.setViewport({
                 latitude: e.lngLat.lat,
                 longitude: e.lngLat.lng,
-                zoom: 3,
+                zoom: 10,
               });
               // setTimeout(() => modalContext.setShow(true), 500);
             }}
@@ -60,6 +76,17 @@ const HomePage = () => {
               modalContext?.coordinates?.longitude && (
                 <MapMarker viewport={modalContext.viewport} />
               )}
+            {allPins.map((each) => {
+              return (
+                <PinMarker
+                  key={each.data._id}
+                  category={each.data.category}
+                  latitude={each.data.latitude}
+                  longitude={each.data.longitude}
+                  viewport={modalContext.viewport}
+                />
+              );
+            })}
           </Map>
           <UtilityBox />
         </>

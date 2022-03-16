@@ -8,8 +8,11 @@ import Bounce from "./common/loaders/Bounce";
 import UserContext from "../context/UserContext";
 import { emailValidation } from "../utils/validations";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import PreviousActionContext from "../context/PreviousActionContext";
+import { useNavigate } from "react-router-dom";
 
 const AuthModal = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [modalType, setModalType] = useState("login");
@@ -18,6 +21,7 @@ const AuthModal = () => {
   const [password, setPassword] = useState("");
   const [passwordShow, setPasswordShow] = useState(false);
 
+  const previousActionContext = useContext(PreviousActionContext);
   const modalContext = useContext(AuthModalContext);
   const user = useContext(UserContext);
 
@@ -42,8 +46,19 @@ const AuthModal = () => {
               if (res["status"] === true) {
                 modalContext.setShow(false);
                 user.setUser(username.trim());
+                user.setUserId(res.result.id);
                 clearData();
                 setIsLoading(false);
+                if (previousActionContext.previousAction.path) {
+                  navigate(previousActionContext.previousAction.path, {
+                    state: {
+                      latitude:
+                        previousActionContext.previousAction.values.latitude,
+                      longitude:
+                        previousActionContext.previousAction.values.longitude,
+                    },
+                  });
+                }
               } else {
                 setIsLoading(false);
                 setErrorText(res["result"]);
@@ -75,8 +90,18 @@ const AuthModal = () => {
         if (res["status"] === true) {
           modalContext.setShow(false);
           user.setUser(username.trim());
+          user.setUserId(res.result.id);
           clearData();
           setIsLoading(false);
+          if (previousActionContext.previousAction.path) {
+            navigate(previousActionContext.previousAction.path, {
+              state: {
+                latitude: previousActionContext.previousAction.values.latitude,
+                longitude:
+                  previousActionContext.previousAction.values.longitude,
+              },
+            });
+          }
         } else {
           setIsLoading(false);
           setErrorText(res["result"]);

@@ -1,13 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthModalContext from "../context/AuthModalContext";
 import NewPinModalContext from "../context/NewPinModalContext";
+import PreviousActionContext from "../context/PreviousActionContext";
+import UserContext from "../context/UserContext";
 import Input from "./common/Input";
 
-const UtilityBox = (props) => {
+const UtilityBox = () => {
   const navigate = useNavigate();
   const modalContext = useContext(NewPinModalContext);
+  const previousActionContext = useContext(PreviousActionContext);
+  const authModalContext = useContext(AuthModalContext);
+  const user = useContext(UserContext);
   const [currentLat, setLatitude] = useState(0);
   const [currentLng, setLongitude] = useState(0);
+
   useEffect(() => {
     setLatitude(modalContext.coordinates.latitude);
     setLongitude(modalContext.coordinates.longitude);
@@ -55,12 +62,23 @@ const UtilityBox = (props) => {
             className="bg-backgroundColor-mainColor text-white font-bold p-1 rounded-full w-28 outline-none"
             onClick={(e) => {
               e.preventDefault();
-              navigate("/new-location/", {
-                state: {
-                  latitude: currentLat,
-                  longitude: currentLng,
-                },
-              });
+              if (user.user) {
+                navigate("/new-location/", {
+                  state: {
+                    latitude: currentLat,
+                    longitude: currentLng,
+                  },
+                });
+              } else {
+                previousActionContext.setPreviousAction({
+                  path: "/new-location",
+                  values: {
+                    latitude: currentLat,
+                    longitude: currentLng,
+                  },
+                });
+                authModalContext.setShow("login");
+              }
             }}
           >
             Create Pin

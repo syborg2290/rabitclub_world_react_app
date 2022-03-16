@@ -61,7 +61,10 @@ export const getUserService = async () => {
     }
 
     if (response.data["message"] === "done") {
-      return { status: true, result: response.data["user"] };
+      return {
+        status: true,
+        result: { id: response.data["id"], username: response.data["user"] },
+      };
     }
     return { status: false, result: response.data["message"] };
   } catch (error) {

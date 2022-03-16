@@ -9,7 +9,7 @@ import {
   HiOutlineChevronDown,
 } from "react-icons/hi";
 import ClickOutHandler from "react-clickout-handler";
-import { IoLogOutOutline, IoPerson } from "react-icons/io5";
+import { IoLogOutOutline, IoPerson, IoPersonOutline } from "react-icons/io5";
 import Button from "./common/Button";
 import AuthModalContext from "../context/AuthModalContext";
 import UserContext from "../context/UserContext";
@@ -132,23 +132,38 @@ const Header = () => {
             >
               {user.user && (
                 <span className="w-50 py-2 px-3 text-sm">
-                  Hello, {user.user}
+                  Hello, @{user.user}
                 </span>
               )}
 
               {user.user && (
-                <button
-                  className="flex w-50 py-2 px-3  hover:text-white text-sm"
-                  onClick={() =>
-                    setTimeout(() => {
-                      user.logout();
-                      navigate("/");
-                    }, 500)
-                  }
-                >
-                  <IoLogOutOutline className="w-5 h-5 mr-2" />
-                  Logout
-                </button>
+                <>
+                  <button
+                    className="flex w-50 py-2 px-3  hover:text-white text-sm"
+                    onClick={() => {
+                      navigate("/account", {
+                        state: {
+                          userId: user.userId,
+                        },
+                      });
+                    }}
+                  >
+                    <IoPersonOutline className="w-5 h-5 mr-2" />
+                    Account
+                  </button>
+                  <button
+                    className="flex w-50 py-2 px-3  hover:text-white text-sm"
+                    onClick={() =>
+                      setTimeout(() => {
+                        user.logout();
+                        navigate("/");
+                      }, 500)
+                    }
+                  >
+                    <IoLogOutOutline className="w-5 h-5 mr-2" />
+                    Logout
+                  </button>
+                </>
               )}
             </div>
           </ClickOutHandler>

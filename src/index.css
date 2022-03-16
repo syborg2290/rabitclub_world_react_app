@@ -2,10 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  background-color: #272728;
+}
+
 /* Firefox */
 html {
-  scrollbar-arrow-color: #030303;
-  scrollbar-color: #030303 #030303;
+  scrollbar-color: #030303;
   scrollbar-width: none;
 }
 
