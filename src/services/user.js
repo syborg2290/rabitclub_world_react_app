@@ -63,7 +63,37 @@ export const getUserService = async () => {
     if (response.data["message"] === "done") {
       return {
         status: true,
-        result: { id: response.data["id"], username: response.data["user"] },
+        result: {
+          id: response.data["id"],
+          username: response.data["user"],
+        },
+      };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const getUserFromIdService = async (id) => {
+  try {
+    const response = await axios.get(api_baseUrl + "user/" + id, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return {
+        status: true,
+        result: {
+          user: response.data["user"],
+        },
       };
     }
     return { status: false, result: response.data["message"] };
@@ -77,6 +107,29 @@ export const logoutService = async () => {
     await axios.get(api_baseUrl + "logout", {
       withCredentials: true,
     });
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const updateCoverPicService = async (url) => {
+  try {
+    const data = { url };
+    const response = await axios.post(api_baseUrl + "update_cover", data, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
   } catch (error) {
     return { status: false, result: "Something went wrong, try again!" };
   }

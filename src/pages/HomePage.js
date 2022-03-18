@@ -7,10 +7,12 @@ import UtilityBox from "../components/UtilityBox";
 import Spinner from "../components/common/loaders/Spinner";
 import { gun } from "../config";
 import PinMarker from "../components/PinMarker";
+import Empty from "../components/common/Empty";
 
 const HomePage = () => {
   const modalContext = useContext(NewPinModalContext);
   const [isLoading, setIsLoading] = useState(true);
+  const [blockLocation, setBlockLocation] = useState(false);
   const [allPins, setAllPins] = useState([]);
 
   useEffect(() => {
@@ -26,22 +28,32 @@ const HomePage = () => {
           setAllPins([...allPins]);
         }
       });
+    getCurrentPosition();
 
-    navigator.geolocation.getCurrentPosition(function (position) {
-      modalContext.setViewport({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        zoom: 3,
-      });
-
-      modalContext.setCoordinates({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-      setIsLoading(false);
-    });
     // eslint-disable-next-line
   }, []);
+
+  const getCurrentPosition = () => {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        modalContext.setViewport({
+          latitude: position ? position.coords.latitude : 20.5937,
+          longitude: position ? position.coords.longitude : 78.9629,
+          zoom: 6,
+        });
+
+        modalContext.setCoordinates({
+          latitude: position ? position.coords.latitude : 20.5937,
+          longitude: position ? position.coords.longitude : 78.9629,
+        });
+        setIsLoading(false);
+      },
+      function (error) {
+        setBlockLocation(true);
+        setIsLoading(false);
+      }
+    );
+  };
 
   return (
     <div className="bg-dark-brightest relative">
@@ -50,11 +62,20 @@ const HomePage = () => {
           {" "}
           <Spinner />
         </div>
+      ) : blockLocation ? (
+        <>
+          <Empty
+            text="Sorry, we need to get your current location!"
+            opacity="opacity-50 "
+            extraClasses="mt-10"
+          />
+        </>
       ) : (
         <>
           <Map
             mapboxAccessToken={process.env.REACT_APP_MAPBOX}
             {...modalContext.viewport}
+            minZoom={8}
             style={{ width: "100vw", height: "100vh" }}
             mapStyle="mapbox://styles/kasunthaksala/cl0nobhzo001a15ofqt7b89mk"
             onMove={(evt) => modalContext.setViewport(evt.viewState)}
@@ -67,7 +88,7 @@ const HomePage = () => {
               modalContext.setViewport({
                 latitude: e.lngLat.lat,
                 longitude: e.lngLat.lng,
-                zoom: 10,
+                zoom: 6,
               });
               // setTimeout(() => modalContext.setShow(true), 500);
             }}

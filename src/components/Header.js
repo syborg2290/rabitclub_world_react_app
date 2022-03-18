@@ -126,7 +126,7 @@ const Header = () => {
             </button>
             <div
               className={
-                "absolute right-0 top-8 bg-dark border border-gray-700 z-10 rounded-md text-textColor-lightGray overflow-hidden " +
+                "absolute right-0 top-8 z-30 bg-dark border border-gray-700 rounded-md text-textColor-lightGray overflow-hidden " +
                 userDropdownVisibilityClass
               }
             >

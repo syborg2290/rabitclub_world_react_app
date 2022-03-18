@@ -18,11 +18,19 @@ function Routing() {
         <Header />
         <Routes location={location}>
           <Route exact path="/" element={<HomePage />} />
-          <Route exact path="/account" element={<ProfilePage user={user} />} />
+          <Route
+            exact
+            path="/account"
+            element={
+              user.user ? <ProfilePage user={user} /> : <Navigate to="/" />
+            }
+          />
           <Route
             exact
             path="/new-location/"
-            element={<NewLocationPage user={user} />}
+            element={
+              user.user ? <NewLocationPage user={user} /> : <Navigate to="/" />
+            }
           />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -28,12 +28,12 @@ const MapMarker = (props) => {
           modalContext.setViewport({
             latitude: e.lngLat.lat,
             longitude: e.lngLat.lng,
-            zoom: 10,
+            zoom: 6,
           });
         }}
       >
         <IoRadioButtonOn
-          color="#F90716"
+          color="#332FD0"
           className="animate-pulse hover:animate-none"
           style={{ fontSize: props.viewport.zoom * 5 }}
         />

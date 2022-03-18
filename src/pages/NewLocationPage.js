@@ -10,6 +10,7 @@ import {
   IoCloseCircle,
   IoCloudUpload,
   IoTrashBinOutline,
+  IoCropOutline,
 } from "react-icons/io5";
 import { categories } from "../utils/categories";
 import { gun } from "../config";
@@ -17,6 +18,7 @@ import PreviousActionContext from "../context/PreviousActionContext";
 import AuthModalContext from "../context/AuthModalContext";
 import Bounce from "../components/common/loaders/Bounce";
 import Button from "../components/common/Button";
+import CropModal from "../components/CropModal";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
@@ -30,8 +32,10 @@ const NewLocationPage = (props) => {
   const [about, setAbout] = useState("");
   const [website, setWebsite] = useState("");
   const [category, setCategory] = useState("Select a category");
-  const [allowToAnyone, setAllowToAnyine] = useState(true);
+  const [allowToAnyone, setAllowToAnyone] = useState(true);
   const [coverImage, setCoverImage] = useState(null);
+  const [cropModal, setCropModal] = useState(false);
+  const [image, setImage] = useState(null);
   const [tag, setTag] = useState("");
   const [tags, setTags] = useState([]);
   const [tagIndex, setTagIndex] = useState(null);
@@ -40,6 +44,7 @@ const NewLocationPage = (props) => {
   const selectCoverImage = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setCoverImage(e.target.files[0]);
+      setImage(URL.createObjectURL(e.target.files[0]));
     }
   };
 
@@ -118,6 +123,17 @@ const NewLocationPage = (props) => {
 
   return (
     <div className="bg-dark-brightest w-full h-screen">
+      {image && (
+        <CropModal
+          show={cropModal}
+          setShow={setCropModal}
+          cropping={image}
+          path={coverImage.path}
+          setCoverImageFile={setCoverImage}
+          aspect={12 / 16} // round=9/9
+          cropShape="rect" //round
+        />
+      )}
       <div className="flex flex-col justify-center items-center py-10">
         <div className="flex lg:flex-row flex-col justify-center items-center rounded-md bg-dark lg:p-5 lg:w-4/5">
           <div className="bg-dark-brighter p-3 flex flex-0.3 w-1/3 rounded-md">
@@ -162,9 +178,19 @@ const NewLocationPage = (props) => {
                   <button
                     type="button"
                     className="absolute bottom-3 right-3 p-3 rounded-full bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                    onClick={() => setCoverImage(null)}
+                    onClick={() => {
+                      setCoverImage(null);
+                      setImage(null);
+                    }}
                   >
                     <IoTrashBinOutline className="text-white" />
+                  </button>
+                  <button
+                    type="button"
+                    className="absolute bottom-3 left-3 p-3 rounded-full bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                    onClick={() => setCropModal(true)}
+                  >
+                    <IoCropOutline className="text-white" />
                   </button>
                 </div>
               )}
@@ -203,7 +229,7 @@ const NewLocationPage = (props) => {
               </span>
               <Toggle
                 defaultChecked={true}
-                onChange={(e) => setAllowToAnyine(e.target.checked)}
+                onChange={(e) => setAllowToAnyone(e.target.checked)}
               />
             </div>
 
