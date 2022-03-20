@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   IoCropOutline,
   IoPencil,
@@ -15,14 +15,18 @@ import CropModal from "../components/CropModal";
 import { getUserFromIdService, updateCoverPicService } from "../services/user";
 import Spinner from "../components/common/loaders/Spinner";
 import EditProfileModal from "../components/EditProfileModal";
+import UserContext from "../context/UserContext";
+import UploadingLoader from "../components/common/loaders/UploadingLoader";
+import LazyLoadingImage from "../components/LazyLoadingImage";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
+  const currentUserInfo = useContext(UserContext);
   const location = useLocation();
   const client = create("https://ipfs.infura.io:5001/api/v0");
   const [coverImage, setCoverImage] = useState(null);
   const [image, setImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCover, setIsUploadingCoverLoading] = useState(false);
   const [cropModal, setCropModal] = useState(false);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -32,7 +36,15 @@ const ProfilePage = (props) => {
     if (location.state === null) {
       navigate("/");
     } else {
-      getUserDetails();
+      if (isLoggedUser) {
+        let currentUser = currentUserInfo.userData;
+        setUserData(currentUser);
+        if (currentUser?.cover_pic) {
+          setCoverImage(currentUser?.cover_pic);
+        }
+      } else {
+        getUserDetails();
+      }
     }
     // eslint-disable-next-line
   }, []);
@@ -42,8 +54,8 @@ const ProfilePage = (props) => {
     if (user) {
       const userDataRes = user.result.user;
       setUserData(userDataRes);
-      if (userDataRes.cover_pic) {
-        setCoverImage(userDataRes.cover_pic);
+      if (userDataRes?.cover_pic) {
+        setCoverImage(userDataRes?.cover_pic);
       }
     }
   };
@@ -56,13 +68,15 @@ const ProfilePage = (props) => {
   };
 
   const saveCoverImage = async () => {
-    setIsLoading(true);
+    setIsUploadingCoverLoading(true);
     if (image) {
       let file = await fetch(coverImage)
         .then((r) => r.blob())
         .then(
           (blobFile) =>
-            new File([blobFile], coverImage.path, { type: "image/jpeg" })
+            new File([blobFile], userData.username + "cover_image", {
+              type: "image/jpeg",
+            })
         );
 
       const created = await client.add(file);
@@ -71,12 +85,12 @@ const ProfilePage = (props) => {
         const res = await updateCoverPicService(url);
         setCoverImage(res.result.cover_pic);
         setImage(null);
-        setIsLoading(false);
+        setIsUploadingCoverLoading(false);
       } else {
-        setIsLoading(false);
+        setIsUploadingCoverLoading(false);
       }
     } else {
-      setIsLoading(true);
+      setIsUploadingCoverLoading(true);
     }
   };
 
@@ -88,7 +102,7 @@ const ProfilePage = (props) => {
           setShow={setCropModal}
           cropping={image}
           path={coverImage.path}
-          setCoverImageFile={setCoverImage}
+          setImageFile={setCoverImage}
           aspect={10 / 3} // round=9/9
           cropShape="rect" //round
         />
@@ -97,8 +111,9 @@ const ProfilePage = (props) => {
         user={userData}
         show={editProfileModal}
         setShow={setEditProfileModal}
+        setUser={setUserData}
       />
-      {isLoading ? (
+      {isLoadingCover ? (
         <div className="h-screen">
           <div
             className={
@@ -106,7 +121,7 @@ const ProfilePage = (props) => {
             }
           >
             Uploading...
-            <Spinner />
+            <UploadingLoader />
           </div>
         </div>
       ) : userData ? (
@@ -118,15 +133,20 @@ const ProfilePage = (props) => {
                 src={coverImage ? coverImage : Cover}
                 alt=""
               />
-              <img
+              <LazyLoadingImage
+                image={userData.profile_pic ? userData.profile_pic : Profile}
                 className="rounded-full w-32 h-32 -mt-10 shadow-xl border-2 border-white p-1 m-1"
-                src={Profile}
-                alt=""
               />
             </div>
-            <h1 className="font-bold text-textColor-lightGray text-3xl text-center mt-3">
+            <h1 className="font-bold text-white text-3xl text-center mt-3">
               {userData && "@" + userData.username}
             </h1>
+            <div className="flex justify-center align-middle">
+              <p className="ine-clamp-3 text-base text-center text-textColor-lightGray mt-2 leading-relaxed w-1/2">
+                {userData && userData.bio}
+              </p>
+            </div>
+
             {!image && (
               <div className="absolute top-0 z-2 right-0 p-2">
                 {isLoggedUser ? (
@@ -212,7 +232,13 @@ const ProfilePage = (props) => {
           </div>
         </div>
       ) : (
-        <Spinner />
+        <div
+          className={
+            "text-textColor-lightGray text-3xl mx-auto self-center text-center mt-52"
+          }
+        >
+          <Spinner />
+        </div>
       )}
     </div>
   );

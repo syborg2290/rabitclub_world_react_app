@@ -15,8 +15,10 @@ function App() {
   const [previousAction, setPreviousAction] = useState({});
   const [viewport, setViewport] = useState({});
   const [coordinates, setCoordinates] = useState({});
+  const [userLoading, setUserLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     getUser();
@@ -28,6 +30,10 @@ function App() {
     if (res.status === true) {
       setUserId(res.result.id);
       setUser(res.result.username);
+      setUserData(res.result.userData);
+      setUserLoading(false);
+    } else {
+      setUserLoading(false);
     }
   };
 
@@ -61,6 +67,9 @@ function App() {
             logout,
             setUser,
             setUserId,
+            userData,
+            setUserData,
+            userLoading,
           }}
         >
           <PreviousActionContext.Provider

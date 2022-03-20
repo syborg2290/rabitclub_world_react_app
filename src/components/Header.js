@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/brand/logo.png";
+import Profile from "../assets/images/default.png";
 import {
   HiOutlineSearch,
   HiOutlineBell,
@@ -115,7 +116,11 @@ const Header = () => {
               {user.user && (
                 <div className="border-2 border-white rounded-full">
                   <img
-                    src="https://bestprofilepictures.com/wp-content/uploads/2021/08/itachi-uchina-Profile-Pictures.jpg"
+                    src={
+                      user?.userData?.profile_pic
+                        ? user?.userData?.profile_pic
+                        : Profile
+                    }
                     alt="user_profile"
                     className="w-7 h-7 block rounded-full"
                   />

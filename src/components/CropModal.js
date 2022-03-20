@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../utils/cropImage";
 import { dataURLtoFile } from "../utils/dataURLtoFile";
@@ -6,20 +6,11 @@ import Button from "./common/Button";
 import { IoCloseCircle, IoCropOutline } from "react-icons/io5";
 
 const CropModal = (props) => {
-  const [image, setImage] = useState(null);
   const [croppedArea, setCroppedArea] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState(0);
-  const [shape, setShape] = useState("rect");
 
   const visibleClass = props.show !== false ? "block" : "hidden";
-
-  useEffect(() => {
-    setAspect(props.aspect);
-    setShape(props.cropShape);
-    setImage(props.cropping);
-  }, [props.aspect, props.cropShape, props.cropping]);
 
   const onCropComplete = (croppedAreaPercentage, croppedAreaPixels) => {
     setCroppedArea(croppedAreaPixels);
@@ -30,9 +21,9 @@ const CropModal = (props) => {
     const canvasDataUrl = canvas.toDataURL("image/jpeg");
     const convertedUrlToFile = dataURLtoFile(
       canvasDataUrl,
-      props.path + ".jpeg"
+      new Date().toUTCString() + props.path + ".jpeg"
     );
-    props.setCoverImageFile(URL.createObjectURL(convertedUrlToFile));
+    props.setImageFile(URL.createObjectURL(convertedUrlToFile));
     props.setShow(false);
   };
 
@@ -45,17 +36,17 @@ const CropModal = (props) => {
     >
       <div className="border border-dark-brightest w-3/4 sm:w-1/2 lg:w-1/4 bg-dark p-5 text-textColor-lightGray self-center mx-auto rounded-md">
         <div>
-          {image && (
+          {props.cropping && props.aspect && (
             <Cropper
-              image={image}
+              image={props.cropping}
               showGrid={true}
               crop={crop}
               zoom={zoom}
-              aspect={aspect}
+              aspect={props.aspect}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
-              cropShape={shape}
+              cropShape={props.cropShape}
             />
           )}
         </div>

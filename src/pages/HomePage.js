@@ -4,10 +4,10 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import MapMarker from "../components/Marker";
 import NewPinModalContext from "../context/NewPinModalContext";
 import UtilityBox from "../components/UtilityBox";
-import Spinner from "../components/common/loaders/Spinner";
 import { gun } from "../config";
 import PinMarker from "../components/PinMarker";
 import Empty from "../components/common/Empty";
+import PlaneLoader from "../components/common/loaders/PlaneLoader";
 
 const HomePage = () => {
   const modalContext = useContext(NewPinModalContext);
@@ -16,43 +16,55 @@ const HomePage = () => {
   const [allPins, setAllPins] = useState([]);
 
   useEffect(() => {
-    gun
-      .get("pins")
-      .map()
-      .on((data, key) => {
-        if (allPins.filter((e) => e.key === key).length <= 0) {
-          allPins.push({
-            key: key,
-            data: data,
-          });
-          setAllPins([...allPins]);
-        }
-      });
+    getAllPins();
     getCurrentPosition();
 
     // eslint-disable-next-line
   }, []);
 
-  const getCurrentPosition = () => {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        modalContext.setViewport({
-          latitude: position ? position.coords.latitude : 20.5937,
-          longitude: position ? position.coords.longitude : 78.9629,
-          zoom: 6,
+  const getAllPins = () => {
+    try {
+      gun
+        .get("pins")
+        .map()
+        .on((data, key) => {
+          if (allPins.filter((e) => e.key === key).length <= 0) {
+            allPins.push({
+              key: key,
+              data: data,
+            });
+            setAllPins([...allPins]);
+          }
         });
+    } catch (error) {
+      console.debug(error);
+    }
+  };
 
-        modalContext.setCoordinates({
-          latitude: position ? position.coords.latitude : 20.5937,
-          longitude: position ? position.coords.longitude : 78.9629,
-        });
-        setIsLoading(false);
-      },
-      function (error) {
-        setBlockLocation(true);
-        setIsLoading(false);
-      }
-    );
+  const getCurrentPosition = () => {
+    try {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          modalContext.setViewport({
+            latitude: position ? position.coords.latitude : 20.5937,
+            longitude: position ? position.coords.longitude : 78.9629,
+            zoom: 6,
+          });
+
+          modalContext.setCoordinates({
+            latitude: position ? position.coords.latitude : 20.5937,
+            longitude: position ? position.coords.longitude : 78.9629,
+          });
+          setIsLoading(false);
+        },
+        function (error) {
+          setBlockLocation(true);
+          setIsLoading(false);
+        }
+      );
+    } catch (error) {
+      console.debug(error);
+    }
   };
 
   return (
@@ -60,7 +72,7 @@ const HomePage = () => {
       {isLoading ? (
         <div className="h-screen">
           {" "}
-          <Spinner />
+          <PlaneLoader />
         </div>
       ) : blockLocation ? (
         <>
@@ -88,7 +100,7 @@ const HomePage = () => {
               modalContext.setViewport({
                 latitude: e.lngLat.lat,
                 longitude: e.lngLat.lng,
-                zoom: 6,
+                zoom: 12,
               });
               // setTimeout(() => modalContext.setShow(true), 500);
             }}
@@ -102,6 +114,7 @@ const HomePage = () => {
                 <PinMarker
                   key={each.data._id}
                   category={each.data.category}
+                  pinData={each.data}
                   latitude={each.data.latitude}
                   longitude={each.data.longitude}
                   viewport={modalContext.viewport}

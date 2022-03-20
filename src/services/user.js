@@ -16,7 +16,7 @@ export const registerService = async (email, password, username) => {
     }
 
     if (response.data["message"] === "done") {
-      return { status: true, result: "done" };
+      return { status: true, result: response.data["user"] };
     }
     return { status: false, result: response.data["message"] };
   } catch (error) {
@@ -39,7 +39,7 @@ export const loginService = async (username, password) => {
     }
 
     if (response.data["message"] === "done") {
-      return { status: true, result: "done" };
+      return { status: true, result: response.data["user"] };
     }
     return { status: false, result: response.data["message"] };
   } catch (error) {
@@ -66,6 +66,7 @@ export const getUserService = async () => {
         result: {
           id: response.data["id"],
           username: response.data["user"],
+          userData: response.data["userData"],
         },
       };
     }
@@ -116,6 +117,29 @@ export const updateCoverPicService = async (url) => {
   try {
     const data = { url };
     const response = await axios.post(api_baseUrl + "update_cover", data, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const updateProfileService = async (email, bio, url) => {
+  try {
+    const data = { email, bio, url };
+    const response = await axios.post(api_baseUrl + "update_profile", data, {
       withCredentials: true,
     });
     if (

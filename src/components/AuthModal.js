@@ -46,7 +46,8 @@ const AuthModal = () => {
               if (res["status"] === true) {
                 modalContext.setShow(false);
                 user.setUser(username.trim());
-                user.setUserId(res.result.id);
+                user.setUserId(res.result._id);
+                user.setUserData(res.result);
                 clearData();
                 setIsLoading(false);
                 if (previousActionContext.previousAction.path) {
@@ -90,7 +91,8 @@ const AuthModal = () => {
         if (res["status"] === true) {
           modalContext.setShow(false);
           user.setUser(username.trim());
-          user.setUserId(res.result.id);
+          user.setUserId(res.result._id);
+          user.setUserData(res.result);
           clearData();
           setIsLoading(false);
           if (previousActionContext.previousAction.path) {

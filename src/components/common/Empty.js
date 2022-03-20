@@ -6,7 +6,7 @@ const Empty = (props) => {
     <div className="hero container max-w-screen-lg mx-auto pb-10 pt-10">
       <img
         src={EmptyBot}
-        alt="empty"
+        alt=""
         className={
           "w-52 h-52 animate-bounce-slow mx-auto " +
           props.opacity +

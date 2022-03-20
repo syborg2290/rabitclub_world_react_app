@@ -11,7 +11,10 @@ import {
   IoCloudUpload,
   IoTrashBinOutline,
   IoCropOutline,
+  IoCloseCircleOutline,
+  IoTimeOutline,
 } from "react-icons/io5";
+import TimePicker from "react-time-picker";
 import { categories } from "../utils/categories";
 import { gun } from "../config";
 import PreviousActionContext from "../context/PreviousActionContext";
@@ -19,6 +22,7 @@ import AuthModalContext from "../context/AuthModalContext";
 import Bounce from "../components/common/loaders/Bounce";
 import Button from "../components/common/Button";
 import CropModal from "../components/CropModal";
+import { days } from "../utils/weekDays";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
@@ -39,6 +43,9 @@ const NewLocationPage = (props) => {
   const [tag, setTag] = useState("");
   const [tags, setTags] = useState([]);
   const [tagIndex, setTagIndex] = useState(null);
+  const [openDays, setOpenDays] = useState([]);
+  const [openTime, setOpenTime] = useState("08:00");
+  const [closeTime, setCloseTime] = useState("23:00");
   const [errors, setErros] = useState("");
 
   const selectCoverImage = (e) => {
@@ -53,46 +60,74 @@ const NewLocationPage = (props) => {
       if (user.user) {
         setLoading(true);
         if (name !== "") {
-          if (category !== "Select a category") {
-            if (coverImage !== null) {
-              const created = await client.add(coverImage);
-              const url = `https://ipfs.infura.io/ipfs/${created.path}`;
+          gun
+            .get("pins")
+            .map((pin) => pin.nameOfPin === name)
+            .once(async (isExistingName, key) => {
+              if (!isExistingName) {
+                if (category !== "Select a category") {
+                  if (openDays.length > 0) {
+                    if (openTime && closeTime !== null) {
+                      if (coverImage !== null) {
+                        const created = await client.add(coverImage);
+                        const url = `https://ipfs.infura.io/ipfs/${created.path}`;
 
-              if (user.userId !== null) {
-                const pinId = uuidv4();
-                var keywordsList = gun.get("list");
-                var votesList = gun.get("list");
-                tags.forEach(function (item) {
-                  keywordsList.set({ value: item });
-                });
-                var pinObj = {
-                  _id: pinId,
-                  owner: user.userId,
-                  nameOfPin: name,
-                  description: about,
-                  website: website,
-                  category: category,
-                  pinImage: url,
-                  allowToAnyone: allowToAnyone,
-                  keywords: keywordsList,
-                  latitude: location.state.latitude,
-                  longitude: location.state.longitude,
-                  votes: votesList,
-                };
-                gun.get("pins").set(pinObj);
-                setLoading(false);
-                navigate("/");
+                        if (user.userId !== null) {
+                          const pinId = uuidv4();
+                          var keywordsList = gun.get("list");
+                          var votesList = gun.get("list");
+                          var opendaysList = gun.get("list");
+                          tags.forEach(function (item) {
+                            keywordsList.set({ value: item });
+                          });
+                          openDays.forEach(function (item) {
+                            opendaysList.set({ value: item });
+                          });
+                          var pinObj = {
+                            _id: pinId,
+                            owner: user.userId,
+                            nameOfPin: name,
+                            description: about,
+                            website: website,
+                            category: category,
+                            pinImage: url,
+                            allowToAnyone: allowToAnyone,
+                            keywords: keywordsList,
+                            latitude: location.state.latitude,
+                            longitude: location.state.longitude,
+                            openDays: opendaysList,
+                            openTime: openTime,
+                            closeTime: closeTime,
+                            votes: votesList,
+                            createdAt: new Date(),
+                          };
+                          gun.get("pins").set(pinObj);
+                          setLoading(false);
+                          navigate("/");
+                        } else {
+                          setLoading(false);
+                        }
+                      } else {
+                        setLoading(false);
+                        setErros("Pin image is required!");
+                      }
+                    } else {
+                      setLoading(false);
+                      setErros("Open & Close time is required!");
+                    }
+                  } else {
+                    setLoading(false);
+                    setErros("Available days is required!");
+                  }
+                } else {
+                  setLoading(false);
+                  setErros("Pin category is required!");
+                }
               } else {
                 setLoading(false);
+                setErros("Pin name is already used!");
               }
-            } else {
-              setLoading(false);
-              setErros("Pin image is required!");
-            }
-          } else {
-            setLoading(false);
-            setErros("Pin category is required!");
-          }
+            });
         } else {
           setLoading(false);
           setErros("Pin name is required!");
@@ -129,7 +164,7 @@ const NewLocationPage = (props) => {
           setShow={setCropModal}
           cropping={image}
           path={coverImage.path}
-          setCoverImageFile={setCoverImage}
+          setImageFile={setCoverImage}
           aspect={12 / 16} // round=9/9
           cropShape="rect" //round
         />
@@ -139,7 +174,7 @@ const NewLocationPage = (props) => {
           <div className="bg-dark-brighter p-3 flex flex-0.3 w-1/3 rounded-md">
             <div className=" flex justify-center items-center flex-col border-2 border-dotted rounded-md border-gray-300 p-3 w-full h-420">
               {errors && (
-                <p className="text-red-600 font-bold mb-5 text-xl transition-all duration-150 ease-in ">
+                <p className="text-red-600 mb-5 text-base font-bold transition-all duration-150 ease-in ">
                   {errors}
                 </p>
               )}
@@ -172,7 +207,7 @@ const NewLocationPage = (props) => {
                 <div className="relative h-full">
                   <img
                     src={URL.createObjectURL(coverImage)}
-                    alt="cover-pic"
+                    alt=""
                     className="h-full w-full"
                   />
                   <button
@@ -213,7 +248,11 @@ const NewLocationPage = (props) => {
               value={about}
               onChange={(e) => setAbout(e.target.value)}
               placeholder="Tell everyone what your Pin is about"
-              className="outline-none text-sm border-b-2 p-2 text-white"
+              rows={8}
+              style={{
+                scrollbarWidth: "none",
+              }}
+              className="outline-none text-sm border-b-2 p-2 text-white overflow-x-scroll"
             />
             <Input
               type="url"
@@ -307,6 +346,78 @@ const NewLocationPage = (props) => {
                     )}
                   </span>
                 ))}
+              </div>
+
+              <div>
+                <span className="text-base text-white">Available Days*</span>
+                <div
+                  className="mt-4 mb-2 flex overflow-x-scroll"
+                  style={{
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  {days.map((each, index) => (
+                    <span
+                      key={index}
+                      onClick={() => {
+                        if (!openDays.includes(each)) {
+                          setOpenDays([...openDays, each]);
+                        } else {
+                          let index = openDays.indexOf(each);
+                          openDays.splice(index, 1);
+                          setOpenDays([...openDays]);
+                        }
+                      }}
+                      className={
+                        openDays.includes(each)
+                          ? "px-4 hover:animate-pulse py-2 mx-1 rounded-full border bg-white border-gray-300 text-black font-semibold text-sm flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease"
+                          : "px-4 hover:animate-pulse py-2 mx-1 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease"
+                      }
+                    >
+                      {each}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-2">
+                <span className="text-base text-white">
+                  Available Time (Open/Close)*
+                </span>
+                <div className="mt-2">
+                  <TimePicker
+                    className="mx-2 text-textColor-lightGray p-1 text-base bg-dark-brighter rounded-md outline-none"
+                    clearIcon={
+                      <IoCloseCircleOutline className="text-white w-6 h-6" />
+                    }
+                    clockIcon={<IoTimeOutline className="text-white w-6 h-6" />}
+                    onChange={setOpenTime}
+                    value={openTime}
+                    hourAriaLabel="Hour"
+                    minuteAriaLabel="Minute"
+                    secondAriaLabel="Seconds"
+                    amPmAriaLabel="AM/PM"
+                    hourPlaceholder="hh"
+                    minutePlaceholder="mm"
+                    secondPlaceholder="ss"
+                  />
+                  <TimePicker
+                    className="mx-2 text-textColor-lightGray p-1 text-base bg-dark-brighter rounded-md outline-none"
+                    clearIcon={
+                      <IoCloseCircleOutline className="text-white w-6 h-6" />
+                    }
+                    clockIcon={<IoTimeOutline className="text-white w-6 h-6" />}
+                    onChange={setCloseTime}
+                    value={closeTime}
+                    hourAriaLabel="Hour"
+                    minuteAriaLabel="Minute"
+                    secondAriaLabel="Seconds"
+                    amPmAriaLabel="AM/PM"
+                    hourPlaceholder="hh"
+                    minutePlaceholder="mm"
+                    secondPlaceholder="ss"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end items-end mt-5">
