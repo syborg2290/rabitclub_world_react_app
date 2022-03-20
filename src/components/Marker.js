@@ -28,7 +28,7 @@ const MapMarker = (props) => {
           modalContext.setViewport({
             latitude: e.lngLat.lat,
             longitude: e.lngLat.lng,
-            zoom: 12,
+            // zoom: 12,
           });
         }}
       >

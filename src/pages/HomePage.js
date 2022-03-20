@@ -48,7 +48,7 @@ const HomePage = () => {
           modalContext.setViewport({
             latitude: position ? position.coords.latitude : 20.5937,
             longitude: position ? position.coords.longitude : 78.9629,
-            zoom: 6,
+            zoom: 12,
           });
 
           modalContext.setCoordinates({
@@ -100,7 +100,7 @@ const HomePage = () => {
               modalContext.setViewport({
                 latitude: e.lngLat.lat,
                 longitude: e.lngLat.lng,
-                zoom: 12,
+                // zoom: 12,
               });
               // setTimeout(() => modalContext.setShow(true), 500);
             }}

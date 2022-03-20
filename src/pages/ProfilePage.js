@@ -234,7 +234,7 @@ const ProfilePage = (props) => {
       ) : (
         <div
           className={
-            "text-textColor-lightGray text-3xl mx-auto self-center text-center mt-52"
+            "mx-auto self-center text-center mt-52"
           }
         >
           <Spinner />
