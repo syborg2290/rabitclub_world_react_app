@@ -117,8 +117,8 @@ const Header = () => {
                 <div className="border-2 border-white rounded-full">
                   <img
                     src={
-                      user?.userData?.profile_pic
-                        ? user?.userData?.profile_pic
+                      user?.userData?.profile_pic_small
+                        ? user?.userData?.profile_pic_small
                         : Profile
                     }
                     alt="user_profile"

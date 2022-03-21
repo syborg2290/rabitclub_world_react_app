@@ -134,7 +134,11 @@ const ProfilePage = (props) => {
                 alt=""
               />
               <LazyLoadingImage
-                image={userData.profile_pic ? userData.profile_pic : Profile}
+                image={
+                  userData.profile_pic_medium
+                    ? userData.profile_pic_medium
+                    : Profile
+                }
                 className="rounded-full w-32 h-32 -mt-10 shadow-xl border-2 border-white p-1 m-1"
               />
             </div>
@@ -232,11 +236,7 @@ const ProfilePage = (props) => {
           </div>
         </div>
       ) : (
-        <div
-          className={
-            "mx-auto self-center text-center mt-52"
-          }
-        >
+        <div className={"mx-auto self-center text-center mt-52"}>
           <Spinner />
         </div>
       )}

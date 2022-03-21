@@ -15,6 +15,7 @@ import {
   IoTimeOutline,
 } from "react-icons/io5";
 import TimePicker from "react-time-picker";
+import Resizer from "react-image-file-resizer";
 import { categories } from "../utils/categories";
 import { gun } from "../config";
 import PreviousActionContext from "../context/PreviousActionContext";
@@ -24,10 +25,12 @@ import Spinner from "../components/common/loaders/Spinner";
 import Button from "../components/common/Button";
 import CropModal from "../components/CropModal";
 import { days } from "../utils/weekDays";
+import NewPinModalContext from "../context/NewPinModalContext";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const modalContext = useContext(NewPinModalContext);
   const user = props.user;
   const previousActionContext = useContext(PreviousActionContext);
   const authModalContext = useContext(AuthModalContext);
@@ -50,6 +53,7 @@ const NewLocationPage = (props) => {
   const [errors, setErros] = useState("");
   const [isPinsEmpty, setIsPinsEmpty] = useState(true);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [pinImageDimensions, setPinImageDimension] = useState(null);
 
   useEffect(() => {
     gun
@@ -60,14 +64,50 @@ const NewLocationPage = (props) => {
           setIsPinsEmpty(false);
         }
       });
+    setNewPinViewPort();
     setIsInitialLoading(false);
+    // eslint-disable-next-line
   }, []);
 
   const selectCoverImage = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setCoverImage(e.target.files[0]);
+      setCoverImage(URL.createObjectURL(e.target.files[0]));
       setImage(URL.createObjectURL(e.target.files[0]));
     }
+  };
+
+  const resizeFile = (file, height, width) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        height,
+        width,
+        "JPEG",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+
+  const onImgLoad = ({ target: img }) => {
+    setPinImageDimension({
+      dimensions: { height: img.offsetHeight, width: img.offsetWidth },
+    });
+  };
+
+  const setNewPinViewPort = () => {
+    modalContext.setCoordinates({
+      latitude: location.state.latitude,
+      longitude: location.state.longitude,
+    });
+    modalContext.setViewport({
+      latitude: location.state.latitude,
+      longitude: location.state.longitude,
+      zoom: 10,
+    });
   };
 
   const pinSaveFunc = async () => {
@@ -75,7 +115,30 @@ const NewLocationPage = (props) => {
       if (openDays.length > 0) {
         if (openTime && closeTime !== null) {
           if (coverImage !== null) {
-            const created = await client.add(coverImage);
+            let file = await fetch(coverImage)
+              .then((r) => r.blob())
+              .then(
+                (blobFile) =>
+                  new File([blobFile], coverImage.path, {
+                    type: "image/jpeg",
+                  })
+              );
+            const dimensionOfImg = pinImageDimensions.dimensions;
+            const smallPinImage = await resizeFile(
+              file,
+              dimensionOfImg.height * 1.6,
+              dimensionOfImg.width * 1.6
+            );
+            const largePinImage = await resizeFile(
+              file,
+              dimensionOfImg.height * 3,
+              dimensionOfImg.width * 3
+            );
+
+            const createdSmall = await client.add(smallPinImage);
+            const smallUrl = `https://ipfs.infura.io/ipfs/${createdSmall.path}`;
+
+            const created = await client.add(largePinImage);
             const url = `https://ipfs.infura.io/ipfs/${created.path}`;
 
             if (user.userId !== null) {
@@ -97,7 +160,8 @@ const NewLocationPage = (props) => {
                 description: about,
                 website: website,
                 category: category,
-                pinImage: url,
+                smallPinImage: smallUrl,
+                defaultPinImage: url,
                 allowToAnyone: allowToAnyone,
                 keywords: keywordsList,
                 latitude: location.state.latitude,
@@ -235,9 +299,10 @@ const NewLocationPage = (props) => {
                 ) : (
                   <div className="relative h-full">
                     <img
-                      src={URL.createObjectURL(coverImage)}
+                      src={coverImage}
+                      onLoad={onImgLoad}
                       alt=""
-                      className="h-full w-full"
+                      className="h-80 w-80"
                     />
                     <button
                       type="button"

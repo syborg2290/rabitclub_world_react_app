@@ -55,7 +55,7 @@ const UtilityBox = () => {
               });
             }}
           >
-            Reset
+            Home
           </button>
           <button
             type="button"

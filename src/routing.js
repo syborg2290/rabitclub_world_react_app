@@ -8,6 +8,7 @@ import LoadingPage from "./pages/LoadingPage";
 import NewLocationPage from "./pages/NewLocationPage";
 import NoInternetConnectionPage from "./pages/NoInternetConnectionPage";
 import ProfilePage from "./pages/ProfilePage";
+import PinPage from "./pages/PinPage";
 
 function Routing() {
   const location = useLocation();
@@ -37,6 +38,13 @@ function Routing() {
                   ) : (
                     <Navigate to="/" />
                   )
+                }
+              />
+              <Route
+                exact
+                path="/pin/"
+                element={
+                  user.user ? <PinPage user={user} /> : <Navigate to="/" />
                 }
               />
               <Route path="*" element={<Navigate to="/" />} />

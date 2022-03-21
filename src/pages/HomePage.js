@@ -43,25 +43,32 @@ const HomePage = () => {
 
   const getCurrentPosition = () => {
     try {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          modalContext.setViewport({
-            latitude: position ? position.coords.latitude : 20.5937,
-            longitude: position ? position.coords.longitude : 78.9629,
-            zoom: 12,
-          });
+      if (
+        modalContext?.coordinates?.latitude &&
+        modalContext?.coordinates?.longitude
+      ) {
+        setIsLoading(false);
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            modalContext.setViewport({
+              latitude: position ? position.coords.latitude : 20.5937,
+              longitude: position ? position.coords.longitude : 78.9629,
+              zoom: 12,
+            });
 
-          modalContext.setCoordinates({
-            latitude: position ? position.coords.latitude : 20.5937,
-            longitude: position ? position.coords.longitude : 78.9629,
-          });
-          setIsLoading(false);
-        },
-        function (error) {
-          setBlockLocation(true);
-          setIsLoading(false);
-        }
-      );
+            modalContext.setCoordinates({
+              latitude: position ? position.coords.latitude : 20.5937,
+              longitude: position ? position.coords.longitude : 78.9629,
+            });
+            setIsLoading(false);
+          },
+          function (error) {
+            setBlockLocation(true);
+            setIsLoading(false);
+          }
+        );
+      }
     } catch (error) {
       console.debug(error);
     }

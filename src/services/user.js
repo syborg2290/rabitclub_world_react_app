@@ -136,9 +136,21 @@ export const updateCoverPicService = async (url) => {
   }
 };
 
-export const updateProfileService = async (email, bio, url) => {
+export const updateProfileService = async (
+  email,
+  bio,
+  profile_pic_small,
+  profile_pic_medium,
+  profile_pic_default
+) => {
   try {
-    const data = { email, bio, url };
+    const data = {
+      email,
+      bio,
+      profile_pic_small,
+      profile_pic_medium,
+      profile_pic_default,
+    };
     const response = await axios.post(api_baseUrl + "update_profile", data, {
       withCredentials: true,
     });

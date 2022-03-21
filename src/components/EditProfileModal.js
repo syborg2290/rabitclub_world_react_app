@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { create } from "ipfs-http-client";
+import Resizer from "react-image-file-resizer";
 import Textarea from "./common/Textarea";
 import Input from "./common/Input";
 import Profile from "../assets/images/default.png";
@@ -20,10 +21,11 @@ const EditProfileModal = (props) => {
   const [image, setImage] = useState(null);
   const [cropModal, setCropModal] = useState(false);
   const visibleClass = props.show !== false ? "block" : "hidden";
+  const [profileImageDimensions, setProfileImageDimension] = useState(null);
 
   useEffect(() => {
     if (props.user) {
-      setProfileImage(props.user?.profile_pic);
+      setProfileImage(props.user?.profile_pic_medium);
       setEmail(props.user?.email);
       setBio(props.user?.bio ? props.user.bio : "");
     }
@@ -34,6 +36,37 @@ const EditProfileModal = (props) => {
       setProfileImage(URL.createObjectURL(e.target.files[0]));
       setImage(URL.createObjectURL(e.target.files[0]));
     }
+  };
+
+  const resizeFile = (file, height, width) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        height,
+        width,
+        "JPEG",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+
+  const onImgLoad = ({ target: img }) => {
+    setProfileImageDimension({
+      dimensions: { height: img.offsetHeight, width: img.offsetWidth },
+    });
+  };
+
+  const clearData = () => {
+    setImage(null);
+    setBio("");
+    setEmail("");
+    setErrorText("");
+    setProfileImage(null);
+    setProfileImageDimension(null);
   };
 
   const submit = async () => {
@@ -48,18 +81,43 @@ const EditProfileModal = (props) => {
               type: "image/jpeg",
             })
         );
-      const created = await client.add(file);
+      const dimensionOfImg = profileImageDimensions.dimensions;
+      const smallImage = await resizeFile(
+        file,
+        dimensionOfImg.height * 0.6,
+        dimensionOfImg.width * 0.6
+      );
+      const mediumImage = await resizeFile(
+        file,
+        dimensionOfImg.height * 1.5,
+        dimensionOfImg.width * 1.5
+      );
+
+      const largeImage = await resizeFile(
+        file,
+        dimensionOfImg.height * 3,
+        dimensionOfImg.width * 3
+      );
+
+      const createdSmall = await client.add(smallImage);
+      const urlSmall = `https://ipfs.infura.io/ipfs/${createdSmall.path}`;
+      const createdMedium = await client.add(mediumImage);
+      const urlMedium = `https://ipfs.infura.io/ipfs/${createdMedium.path}`;
+      const created = await client.add(largeImage);
       const url = `https://ipfs.infura.io/ipfs/${created.path}`;
       if (url) {
         const res = await updateProfileService(
           email === "" ? props.user?.email : email,
           bio,
+          urlSmall,
+          urlMedium,
           url
         );
         if (res["status"] === true) {
           currentUserInfo.setUserData(res.result);
           props.setUser(res.result);
           setIsLoading(false);
+          clearData();
           props.setShow(false);
         } else {
           setErrorText(res.result);
@@ -76,6 +134,7 @@ const EditProfileModal = (props) => {
         currentUserInfo.setUserData(res.result);
         props.setUser(res.result);
         props.setShow(false);
+        clearData();
         setIsLoading(false);
       } else {
         setErrorText(res.result);
@@ -118,6 +177,7 @@ const EditProfileModal = (props) => {
           <img
             className="rounded-full w-32 h-32 shadow-xl border-2 border-white p-1 mb-5"
             src={profileImage ? profileImage : Profile}
+            onLoad={onImgLoad}
             alt=""
           />
           <label className="cursor-pointer text-white font-bold absolute ml-16">
@@ -133,12 +193,14 @@ const EditProfileModal = (props) => {
               multiple={false}
             />
           </label>
-          <button
-            onClick={() => setCropModal(true)}
-            className="bg-backgroundColor-mainColor cursor-pointer rounded-full p-2 hover:opacity-95 absolute mr-16"
-          >
-            <IoCropOutline className="w-4 h-4" />
-          </button>
+          {image && (
+            <button
+              onClick={() => setCropModal(true)}
+              className="bg-backgroundColor-mainColor cursor-pointer rounded-full p-2 hover:opacity-95 absolute mr-16"
+            >
+              <IoCropOutline className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <label>
