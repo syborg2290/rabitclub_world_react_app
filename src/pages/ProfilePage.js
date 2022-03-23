@@ -18,6 +18,7 @@ import EditProfileModal from "../components/EditProfileModal";
 import UserContext from "../context/UserContext";
 import UploadingLoader from "../components/common/loaders/UploadingLoader";
 import LazyLoadingImage from "../components/LazyLoadingImage";
+import LongTextModal from "../components/LongTextModal";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const ProfilePage = (props) => {
   const [cropModal, setCropModal] = useState(false);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [viewDescModal, setViewDescModal] = useState(false);
   const isLoggedUser = location?.state?.userId === props.user.userId;
 
   useEffect(() => {
@@ -113,6 +115,13 @@ const ProfilePage = (props) => {
         setShow={setEditProfileModal}
         setUser={setUserData}
       />
+      {viewDescModal && userData && userData?.bio && (
+        <LongTextModal
+          show={viewDescModal}
+          setShow={setViewDescModal}
+          text={userData?.bio}
+        />
+      )}
       {isLoadingCover ? (
         <div className="h-screen">
           <div
@@ -143,13 +152,18 @@ const ProfilePage = (props) => {
               />
             </div>
             <h1 className="font-bold text-white text-3xl text-center mt-3">
-              {userData && "@" + userData.username}
+              {userData && "@" + userData?.username}
             </h1>
-            <div className="flex justify-center align-middle">
-              <p className="ine-clamp-3 text-base text-center text-textColor-lightGray mt-2 leading-relaxed w-1/2">
-                {userData && userData.bio}
-              </p>
-            </div>
+            {userData?.bio && (
+              <div className="flex justify-center align-middle">
+                <p
+                  className="line-clamp-3 text-base text-center text-textColor-lightGray mt-2 leading-relaxed w-1/2 cursor-pointer"
+                  onClick={() => setViewDescModal(true)}
+                >
+                  {userData && userData?.bio}
+                </p>
+              </div>
+            )}
 
             {!image && (
               <div className="absolute top-0 z-2 right-0 p-2">

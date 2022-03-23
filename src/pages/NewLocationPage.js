@@ -143,15 +143,7 @@ const NewLocationPage = (props) => {
 
             if (user.userId !== null) {
               const pinId = uuidv4();
-              var keywordsList = gun.get("list");
-              var votesList = gun.get("list");
-              var opendaysList = gun.get("list");
-              tags.forEach(function (item) {
-                keywordsList.set({ value: item });
-              });
-              openDays.forEach(function (item) {
-                opendaysList.set({ value: item });
-              });
+
               const createdAt = new Date().toDateString();
               var pinObj = {
                 _id: pinId,
@@ -163,13 +155,12 @@ const NewLocationPage = (props) => {
                 smallPinImage: smallUrl,
                 defaultPinImage: url,
                 allowToAnyone: allowToAnyone,
-                keywords: keywordsList,
+                keywords: tags.toString(),
                 latitude: location.state.latitude,
                 longitude: location.state.longitude,
-                openDays: opendaysList,
+                openDays: openDays.toString(),
                 openTime: openTime,
                 closeTime: closeTime,
-                votes: votesList,
                 createdAt: createdAt,
               };
               gun.get("pins").set(pinObj);
@@ -478,7 +469,8 @@ const NewLocationPage = (props) => {
                   <span className="text-base text-white">
                     Available Time (Open/Close)*
                   </span>
-                  <div className="mt-2">
+                  <div className="mt-2 text-textColor-lightGray">
+                    From
                     <TimePicker
                       className="mx-2 text-textColor-lightGray p-1 text-base bg-dark-brighter rounded-md outline-none"
                       clearIcon={
@@ -497,6 +489,7 @@ const NewLocationPage = (props) => {
                       minutePlaceholder="mm"
                       secondPlaceholder="ss"
                     />
+                    To
                     <TimePicker
                       className="mx-2 text-textColor-lightGray p-1 text-base bg-dark-brighter rounded-md outline-none"
                       clearIcon={

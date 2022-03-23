@@ -36,8 +36,8 @@ const PinMarker = (props) => {
           //   }, 500);
           // }}
           style={{
-            width: props.viewport.zoom * 5,
-            height: props.viewport.zoom * 5,
+            width: props.zoom * 4,
+            height: props.zoom * 4,
           }}
           className="border-2 border-backgroundColor-mainColor bg-backgroundColor-mainColor rounded-full"
         >

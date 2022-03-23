@@ -14,6 +14,7 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [blockLocation, setBlockLocation] = useState(false);
   const [allPins, setAllPins] = useState([]);
+  const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
     getAllPins();
@@ -98,6 +99,9 @@ const HomePage = () => {
             style={{ width: "100vw", height: "100vh" }}
             mapStyle="mapbox://styles/kasunthaksala/cl0nobhzo001a15ofqt7b89mk"
             onMove={(evt) => modalContext.setViewport(evt.viewState)}
+            onZoom={(e) => {
+              setZoom(e.viewState.zoom);
+            }}
             onClick={(e) => {
               e.preventDefault();
               modalContext.setCoordinates({
@@ -124,7 +128,7 @@ const HomePage = () => {
                   pinData={each.data}
                   latitude={each.data.latitude}
                   longitude={each.data.longitude}
-                  viewport={modalContext.viewport}
+                  zoom={zoom}
                 />
               );
             })}

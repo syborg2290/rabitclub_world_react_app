@@ -1,6 +1,6 @@
 export const categories = [
   {
-    name: "Resturant & Hotel",
+    name: "Resturant & Foods center",
     icon: "https://img.icons8.com/wired/64/000000/restaurant.png",
   },
   {
@@ -52,7 +52,7 @@ export const categories = [
     icon: "https://img.icons8.com/wired/64/000000/car.png",
   },
   {
-    name: "Accommodation & Staying",
+    name: "Hotel && Accommodation",
     icon: "https://img.icons8.com/wired/64/000000/room.png",
   },
   {
