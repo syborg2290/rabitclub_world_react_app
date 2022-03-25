@@ -1,12 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./App";
+import { Beforeunload } from "react-beforeunload";
+import { setLoggedService } from "./services/user";
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Beforeunload
+      onBeforeunload={async (event) => {
+        event.preventDefault();
+        localStorage.setItem("logoutStatus", "true");
+        await setLoggedService(false);
+      }}
+    >
+      <App />
+    </Beforeunload>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
-

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { create } from "ipfs-http-client";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +13,8 @@ import {
   IoCropOutline,
   IoCloseCircleOutline,
   IoTimeOutline,
+  IoChevronForwardOutline,
+  IoChevronBackOutline,
 } from "react-icons/io5";
 import TimePicker from "react-time-picker";
 import Resizer from "react-image-file-resizer";
@@ -29,6 +31,7 @@ import NewPinModalContext from "../context/NewPinModalContext";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
+  const scrollbar = useRef(null);
   const location = useLocation();
   const modalContext = useContext(NewPinModalContext);
   const user = props.user;
@@ -275,7 +278,7 @@ const NewLocationPage = (props) => {
                       </div>
 
                       <p className="mt-32 text-gray-400">
-                        Select first pin image for your pin *
+                        Select pin image for your pin *
                       </p>
                     </div>
                     <input
@@ -317,7 +320,7 @@ const NewLocationPage = (props) => {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-6 lg:pl-5 mt-5 w-1/2">
+            <div className="flex flex-col gap-6 lg:pl-5 mt-5 lg:w-2/3">
               <span className="text-3xl text-white font-bold">
                 Create Your New Pin Here
               </span>
@@ -349,11 +352,13 @@ const NewLocationPage = (props) => {
 
               <div className="flex justify-center">
                 <span className="text-textColor-lightGray ml-2 mr-2">
-                  Is anyone can post on this pin ?
+                  Anyone can post on this pin
                 </span>
                 <Toggle
                   defaultChecked={true}
-                  onChange={(e) => setAllowToAnyone(e.target.checked)}
+                  onChange={(e) => {
+                    setAllowToAnyone(e.target.checked);
+                  }}
                 />
               </div>
 
@@ -404,33 +409,57 @@ const NewLocationPage = (props) => {
                     Add({tags.length})
                   </Button>
                 </div>
-                <div
-                  className="mt-4 mb-2 flex overflow-x-scroll"
-                  style={{
-                    scrollbarWidth: "none",
-                  }}
-                >
-                  {tags.map((each, index) => (
-                    <span
-                      key={index}
-                      onMouseOver={() => {
-                        setTagIndex(index);
+                <div className="flex mb-5">
+                  {tags.length > 2 && (
+                    <IoChevronForwardOutline
+                      className="text-white mt-5 justify-center self-center cursor-pointer w-5 h-5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollbar.current.scrollLeft += 20;
                       }}
-                      onMouseOut={() => setTagIndex(null)}
-                      className="px-4 hover:animate-pulse py-2 mx-1 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease"
-                    >
-                      {index === tagIndex ? (
-                        <IoCloseCircle
-                          className="text-white w-6 h-6"
-                          onClick={() => {
-                            tags.splice(tagIndex, 1);
-                          }}
-                        />
-                      ) : (
-                        each
-                      )}
-                    </span>
-                  ))}
+                    />
+                  )}
+                  <div
+                    className="mt-4 mb-2 flex overflow-x-scroll overflow-y-hidden w-full"
+                    ref={scrollbar}
+                    style={{
+                      scrollbarWidth: "none",
+                    }}
+                  >
+                    {tags.reverse().map((each, index) => (
+                      <span
+                        key={index}
+                        onMouseOver={() => {
+                          setTagIndex(index);
+                        }}
+                        onMouseOut={() => setTagIndex(null)}
+                        className="p-2 hover:animate-pulse mx-1 rounded-full border 
+                              border-gray-300 text-gray-500 font-semibold text-sm 
+                                flex self-center w-max h-10 cursor-pointer active:bg-gray-300 
+                                transition duration-300 ease"
+                      >
+                        {index === tagIndex ? (
+                          <IoCloseCircle
+                            className="text-white w-6 h-6"
+                            onClick={() => {
+                              tags.splice(tagIndex, 1);
+                            }}
+                          />
+                        ) : (
+                          each
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  {tags.length > 2 && (
+                    <IoChevronBackOutline
+                      className="text-white mt-5 justify-center self-center cursor-pointer w-5 h-5"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollbar.current.scrollLeft -= 20;
+                      }}
+                    />
+                  )}
                 </div>
 
                 <div>

@@ -129,7 +129,7 @@ const ProfilePage = (props) => {
               "text-textColor-lightGray text-3xl mx-auto self-center text-center mt-52"
             }
           >
-            Uploading...
+            Updating...
             <UploadingLoader />
           </div>
         </div>

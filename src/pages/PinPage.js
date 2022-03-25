@@ -12,6 +12,7 @@ import { days } from "../utils/weekDays";
 import Empty from "../components/common/Empty";
 import UserContext from "../context/UserContext";
 import CreatePinPostModal from "../components/CreatePinPostModal";
+import Button from "../components/common/Button";
 
 const PinPage = () => {
   const navigate = useNavigate();
@@ -57,7 +58,11 @@ const PinPage = () => {
   const selectMedia = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
       for (var i = 0; i < e.target.files.length; i++) {
-        mediaList.push(URL.createObjectURL(e.target.files[i]));
+        mediaList.push({
+          index: mediaList.length,
+          type: e.target.files[i].type.includes("video") ? "video" : "image",
+          fileUrl: URL.createObjectURL(e.target.files[i]),
+        });
       }
       setOpenPostModal(true);
     }
@@ -96,9 +101,15 @@ const PinPage = () => {
             <div className="w-full p-5 flex-1 xl:min-w-620">
               <div>
                 <div className="flex justify-between">
-                  <h1 className="text-4xl font-bold break-words text-white">
-                    {pinDetails?.nameOfPin}
-                  </h1>
+                  <div className="flex">
+                    <h1 className="text-4xl font-bold break-words text-white mr-2">
+                      {pinDetails?.nameOfPin}
+                    </h1>
+                    <Button className="h-8 mt-2 text-textColor-lightGray border border-gray-300 hover:border-white hover:border-2">
+                      <div className="flex">Subscribe</div>
+                    </Button>
+                  </div>
+
                   {pinDetails?.allowToAnyone === true ? (
                     <label className="cursor-pointer text-white font-bold">
                       <div className="bg-backgroundColor-mainColor rounded-full p-2 hover:opacity-95">

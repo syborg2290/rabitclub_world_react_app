@@ -3,7 +3,11 @@ import { BrowserRouter } from "react-router-dom";
 import AuthModal from "./components/AuthModal";
 // import NewPinModal from "./components/NewPinModal";
 import AuthModalContext from "./context/AuthModalContext";
-import { getUserService, logoutService } from "./services/user";
+import {
+  getUserService,
+  logoutService,
+  setLoggedService,
+} from "./services/user";
 import UserContext from "./context/UserContext";
 import Routing from "./routing";
 import NewPinModalContext from "./context/NewPinModalContext";
@@ -38,9 +42,13 @@ function App() {
   };
 
   const logout = async () => {
-    await logoutService();
-    setUser(null);
-    setUserId(null);
+    const resSetLogged = await setLoggedService(false);
+    if (resSetLogged["status"] === true) {
+      localStorage.setItem("logoutStatus", "true");
+      await logoutService();
+      setUser(null);
+      setUserId(null);
+    }
   };
 
   return (

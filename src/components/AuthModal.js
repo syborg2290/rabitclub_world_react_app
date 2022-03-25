@@ -1,7 +1,11 @@
 import React, { useState, useContext } from "react";
 import AuthModalContext from "../context/AuthModalContext";
 import ClickOutHandler from "react-clickout-handler";
-import { loginService, registerService } from "../services/user";
+import {
+  loginService,
+  registerService,
+  setLoggedService,
+} from "../services/user";
 import Button from "./common/Button";
 import Input from "./common/Input";
 import Bounce from "./common/loaders/Bounce";
@@ -44,6 +48,7 @@ const AuthModal = () => {
                 username.trim()
               );
               if (res["status"] === true) {
+                localStorage.setItem("logoutStatus", "false");
                 modalContext.setShow(false);
                 user.setUser(username.trim());
                 user.setUserId(res.result._id);
@@ -81,6 +86,19 @@ const AuthModal = () => {
     }
   };
 
+  const commonLogin = () => {
+    clearData();
+    setIsLoading(false);
+    if (previousActionContext.previousAction.path) {
+      navigate(previousActionContext.previousAction.path, {
+        state: {
+          latitude: previousActionContext.previousAction.values.latitude,
+          longitude: previousActionContext.previousAction.values.longitude,
+        },
+      });
+    }
+  };
+
   const login = async (e) => {
     e.preventDefault();
 
@@ -89,20 +107,34 @@ const AuthModal = () => {
         setIsLoading(true);
         const res = await loginService(username.trim(), password.trim());
         if (res["status"] === true) {
-          modalContext.setShow(false);
-          user.setUser(username.trim());
-          user.setUserId(res.result._id);
-          user.setUserData(res.result);
-          clearData();
-          setIsLoading(false);
-          if (previousActionContext.previousAction.path) {
-            navigate(previousActionContext.previousAction.path, {
-              state: {
-                latitude: previousActionContext.previousAction.values.latitude,
-                longitude:
-                  previousActionContext.previousAction.values.longitude,
-              },
-            });
+          if (
+            localStorage.getItem("logoutStatus") === null ||
+            localStorage.getItem("logoutStatus") === "false"
+          ) {
+            modalContext.setShow(false);
+            user.setUser(username.trim());
+            user.setUserId(res.result._id);
+            user.setUserData(res.result);
+            commonLogin();
+          } else {
+            if (!res.result.isAlreadyLogged) {
+              const resSetLogged = await setLoggedService(true);
+              if (resSetLogged["status"] === true) {
+                localStorage.setItem("logoutStatus", "false");
+                modalContext.setShow(false);
+                user.setUser(username.trim());
+                user.setUserId(res.result._id);
+                user.setUserData(res.result);
+                commonLogin();
+              } else {
+                setIsLoading(false);
+                setErrorText("Something went wrong, please try again");
+              }
+            } else {
+              setIsLoading(false);
+              //send security email
+              setErrorText("Oops, already logged in with this account!");
+            }
           }
         } else {
           setIsLoading(false);
