@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { create } from "ipfs-http-client";
 import Resizer from "react-image-file-resizer";
 import Textarea from "./common/Textarea";
 import Input from "./common/Input";
@@ -9,9 +8,9 @@ import { updateProfileService } from "../services/user";
 import UserContext from "../context/UserContext";
 import Bounce from "../components/common/loaders/Bounce";
 import CropModal from "./CropModal";
+import { client } from "../config";
 
 const EditProfileModal = (props) => {
-  const client = create("https://ipfs.infura.io:5001/api/v0");
   const [isLoading, setIsLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
   const currentUserInfo = useContext(UserContext);

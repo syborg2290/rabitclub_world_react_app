@@ -1,6 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { create } from "ipfs-http-client";
 import { v4 as uuidv4 } from "uuid";
 import Toggle from "react-toggle";
 import "react-toggle/style.css";
@@ -19,7 +18,7 @@ import {
 import TimePicker from "react-time-picker";
 import Resizer from "react-image-file-resizer";
 import { categories } from "../utils/categories";
-import { gun } from "../config";
+import { client, gun } from "../config";
 import PreviousActionContext from "../context/PreviousActionContext";
 import AuthModalContext from "../context/AuthModalContext";
 import Bounce from "../components/common/loaders/Bounce";
@@ -37,7 +36,6 @@ const NewLocationPage = (props) => {
   const user = props.user;
   const previousActionContext = useContext(PreviousActionContext);
   const authModalContext = useContext(AuthModalContext);
-  const client = create("https://ipfs.infura.io:5001/api/v0");
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [about, setAbout] = useState("");

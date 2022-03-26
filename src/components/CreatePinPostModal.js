@@ -5,9 +5,9 @@ import {
   IoChevronForwardOutline,
   IoCloseCircleOutline,
   IoCloseOutline,
-  IoCropOutline,
-  IoCutOutline,
 } from "react-icons/io5";
+import { client, gun } from "../config";
+import { v4 as uuidv4 } from "uuid";
 import Input from "./common/Input";
 import Bounce from "./common/loaders/Bounce";
 import ImgLoader from "./common/loaders/ImgLoader";
@@ -17,18 +17,67 @@ import VideoPlayer from "./common/VideoPlayer";
 const CreatePinPostModal = (props) => {
   const visibleClass = props.show !== false ? "block" : "hidden";
   const [isLoading, setIsLoading] = useState(false);
-  const [cropModal, setCropModal] = useState(false);
-  const [displayImage, setDisplayImage] = useState(null);
+  const [displayMedia, setDisplayMedia] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [errorText, setErrorText] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
-    setDisplayImage({ index: 0, image: props?.mediaList[0] });
+    setDisplayMedia({ index: 0, media: props?.mediaList[0] });
     setInitialLoading(false);
   }, [props?.mediaList]);
 
-  const submit = () => {};
+  const submit = async () => {
+    try {
+      setIsLoading(true);
+      if (props?.mediaList.length > 0) {
+        if (title !== "") {
+          let uploadedUrls = [];
+          (function (next) {
+            props.mediaList.forEach(async (each) => {
+              let file = await fetch(each.fileUrl)
+                .then((r) => r.blob())
+                .then(
+                  (blobFile) =>
+                    new File([blobFile], each.path, {
+                      type: each.type === "image" ? "image/jpeg" : "video/mp4",
+                    })
+                );
+              const created = await client.add(file);
+              const url = `https://ipfs.infura.io/ipfs/${created.path}`;
+              let obj = { url: url, type: each.type };
+              uploadedUrls.push(JSON.stringify(obj));
+              if (uploadedUrls.length === props.mediaList.length) next();
+            });
+          })(function () {
+            const pinPostId = uuidv4();
+            const createdAt = new Date().toDateString();
+            var pinPostObj = {
+              _id: pinPostId,
+              pinId: props.pinId,
+              owner: props.currentUser,
+              title: title,
+              description: description,
+              urlsList: uploadedUrls.toString(),
+              createdAt: createdAt,
+            };
+            gun.get("pin_posts").get(props.pinId).set(pinPostObj);
+            setIsLoading(false);
+            props.setMediaList([]);
+            props.setShow(false);
+          });
+        } else {
+          setIsLoading(false);
+          setErrorText("Post title is required!");
+        }
+      } else {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.debug(error);
+    }
+  };
 
   const selectMedia = async (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -64,6 +113,9 @@ const CreatePinPostModal = (props) => {
         <div className="flex justify-center align-middle text-white text-2xl">
           Create Your Post
         </div>
+        <div className="flex justify-center align-middle mt-5">
+          <span className="text-red-600 txt-sm font-bold">{errorText}</span>
+        </div>
         {initialLoading ? (
           <div className={"mx-auto self-center text-center mt-52"}>
             <ImgLoader />
@@ -75,10 +127,10 @@ const CreatePinPostModal = (props) => {
                 className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (props?.mediaList.length > displayImage.index + 1) {
-                    setDisplayImage({
-                      index: displayImage.index + 1,
-                      image: props?.mediaList[displayImage.index + 1],
+                  if (props?.mediaList.length > displayMedia.index + 1) {
+                    setDisplayMedia({
+                      index: displayMedia.index + 1,
+                      media: props?.mediaList[displayMedia.index + 1],
                     });
                   }
                 }}
@@ -86,44 +138,33 @@ const CreatePinPostModal = (props) => {
             )}
             <div className="mt-5 mb-2">
               <div className="relative">
-                {displayImage.image.type === "image" ? (
+                {displayMedia.media.type === "image" ? (
                   <img
-                    src={displayImage.image.fileUrl}
+                    src={displayMedia.media.fileUrl}
                     alt=""
                     className="w-60 h-60 rounded-md"
                   />
                 ) : (
                   <VideoPlayer
-                    src={displayImage.image.fileUrl}
+                    src={displayMedia.media.fileUrl}
                     className="object-cover w-60 h-60 rounded-md"
                   />
                 )}
 
                 {props?.mediaList.length > 1 && (
-                  <div className="bg-black rounded-md p-1 font-bold absolute left-3 bottom-1">
-                    {displayImage.index + 1}/{props?.mediaList.length}
+                  <div className="bg-black rounded-full px-2 py-1 absolute left-3 top-1">
+                    {displayMedia.index + 1}/{props?.mediaList.length}
                   </div>
                 )}
 
                 <button
-                  onClick={() => setCropModal(true)}
-                  className="bg-backgroundColor-mainColor cursor-pointer rounded-full p-1 hover:opacity-95 absolute left-3 top-1"
-                >
-                  {displayImage.image.type === "image" ? (
-                    <IoCropOutline className="w-6 h-6" />
-                  ) : (
-                    <IoCutOutline className="w-6 h-6" />
-                  )}
-                </button>
-
-                <button
                   onClick={() => {
                     if (props.mediaList.length === 1) {
-                      props.mediaList.splice(displayImage.image.index, 1);
+                      props.mediaList.splice(displayMedia.media.index, 1);
                       props.setMediaList([]);
                       props.setShow(false);
                     } else {
-                      props.mediaList.splice(displayImage.image.index, 1);
+                      props.mediaList.splice(displayMedia.media.index, 1);
                       props.setMediaList([...props.mediaList]);
                     }
                   }}
@@ -139,10 +180,10 @@ const CreatePinPostModal = (props) => {
                 className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (displayImage.index > 0) {
-                    setDisplayImage({
-                      index: displayImage.index - 1,
-                      image: props?.mediaList[displayImage.index - 1],
+                  if (displayMedia.index > 0) {
+                    setDisplayMedia({
+                      index: displayMedia.index - 1,
+                      media: props?.mediaList[displayMedia.index - 1],
                     });
                   }
                 }}

@@ -13,6 +13,8 @@ import Empty from "../components/common/Empty";
 import UserContext from "../context/UserContext";
 import CreatePinPostModal from "../components/CreatePinPostModal";
 import Button from "../components/common/Button";
+import { gun } from "../config";
+import PinPost from "../components/PinPost";
 
 const PinPage = () => {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const PinPage = () => {
   const [viewDescModal, setViewDescModal] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [mediaList, setMediaList] = useState([]);
+  const [pinPosts, setPinPosts] = useState([]);
   const [openPostModal, setOpenPostModal] = useState(false);
 
   useEffect(() => {
@@ -31,6 +34,7 @@ const PinPage = () => {
       setPinDetails(location.state?.pin);
       setNewPinViewPort(location.state?.pin);
       getOwnerDetails(location.state?.pin);
+      getAllThePosts(location.state?.pin._id, 0);
       setIsInitialLoading(false);
     }
     // eslint-disable-next-line
@@ -52,6 +56,24 @@ const PinPage = () => {
     const user = await getUserFromIdService(pin?.owner);
     if (user.status === true) {
       setOwner(user.result["user"]);
+    }
+  };
+
+  const getAllThePosts = (pinId, length) => {
+    try {
+      gun
+        .get("pin_posts")
+        .get(pinId)
+        .map()
+        .once((data, key) => {
+          pinPosts.push({
+            key: key,
+            data: data,
+          });
+          setPinPosts([...pinPosts]);
+        });
+    } catch (error) {
+      console.debug(error);
     }
   };
 
@@ -90,6 +112,8 @@ const PinPage = () => {
                 setShow={setOpenPostModal}
                 setMediaList={setMediaList}
                 mediaList={mediaList}
+                currentUser={currentUserInfo.userId}
+                pinId={pinDetails._id}
               />
             )}
             <div className="flex justify-center items-center rounded-md p-1">
@@ -239,7 +263,15 @@ const PinPage = () => {
             </div>
           </div>
           <div className="flex p-10 bg-dark m-10 rounded-md">
-            <Empty opacity="opacity-20 " text="Not available any media yet" />
+            {pinPosts.length > 0 ? (
+              <div className="flex flex-wrap">
+                {pinPosts.map((each) => {
+                  return <PinPost key={each.key} post={each.data} />;
+                })}
+              </div>
+            ) : (
+              <Empty opacity="opacity-20 " text="Not available any media yet" />
+            )}
           </div>
         </>
       )}

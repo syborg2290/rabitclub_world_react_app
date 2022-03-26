@@ -6,7 +6,6 @@ import {
   IoReload,
   IoSaveOutline,
 } from "react-icons/io5";
-import { create } from "ipfs-http-client";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cover from "../assets/images/cover.jpg";
 import Profile from "../assets/images/default.png";
@@ -19,12 +18,12 @@ import UserContext from "../context/UserContext";
 import UploadingLoader from "../components/common/loaders/UploadingLoader";
 import LazyLoadingImage from "../components/LazyLoadingImage";
 import LongTextModal from "../components/LongTextModal";
+import { client } from "../config";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
   const currentUserInfo = useContext(UserContext);
   const location = useLocation();
-  const client = create("https://ipfs.infura.io:5001/api/v0");
   const [coverImage, setCoverImage] = useState(null);
   const [image, setImage] = useState(null);
   const [isLoadingCover, setIsUploadingCoverLoading] = useState(false);
