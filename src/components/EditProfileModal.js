@@ -234,7 +234,7 @@ const EditProfileModal = (props) => {
           <button
             type="button"
             onClick={isLoading ? null : submit}
-            className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-full w-28 outline-none"
+            className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-md w-28 outline-none"
           >
             {isLoading ? <Bounce /> : "Submit"}
           </button>

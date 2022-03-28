@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Marker } from "react-map-gl";
-import { categories } from "../utils/categories";
+import { pinCategories } from "../utils/categories";
 import MarkerPopUp from "./MarkerPopUp";
 
 const PinMarker = (props) => {
@@ -42,7 +42,7 @@ const PinMarker = (props) => {
           className="border-2 border-backgroundColor-mainColor bg-backgroundColor-mainColor rounded-full"
         >
           <img
-            src={categories.find((e) => e.name === props.category).icon}
+            src={pinCategories.find((e) => e.name === props.category).icon}
             alt=""
             className="p-1"
             style={{

@@ -136,7 +136,7 @@ const PinPage = () => {
 
                   {pinDetails?.allowToAnyone === true ? (
                     <label className="cursor-pointer text-white font-bold">
-                      <div className="bg-backgroundColor-mainColor rounded-full p-2 hover:opacity-95">
+                      <div className="bg-backgroundColor-mainColor rounded-md p-2 hover:opacity-95">
                         Create New Post
                       </div>
                       <input
@@ -150,7 +150,7 @@ const PinPage = () => {
                     </label>
                   ) : owner._id === currentUserInfo.userId ? (
                     <label className="cursor-pointer text-white font-bold">
-                      <div className="bg-backgroundColor-mainColor rounded-full p-2 hover:opacity-95">
+                      <div className="bg-backgroundColor-mainColor rounded-md p-2 hover:opacity-95">
                         Create New Post
                       </div>
                       <input
@@ -262,9 +262,9 @@ const PinPage = () => {
               </div>
             </div>
           </div>
-          <div className="flex p-10 bg-dark m-10 rounded-md">
+          <div className="p-5 bg-dark m-10 rounded-md">
             {pinPosts.length > 0 ? (
-              <div className="flex flex-wrap">
+              <div className="flex flex-wrap justify-center align-middle">
                 {pinPosts.map((each) => {
                   return <PinPost key={each.key} post={each.data} />;
                 })}

@@ -17,7 +17,7 @@ import {
 } from "react-icons/io5";
 import TimePicker from "react-time-picker";
 import Resizer from "react-image-file-resizer";
-import { categories } from "../utils/categories";
+import { pinCategories } from "../utils/categories";
 import { client, gun } from "../config";
 import PreviousActionContext from "../context/PreviousActionContext";
 import AuthModalContext from "../context/AuthModalContext";
@@ -377,7 +377,7 @@ const NewLocationPage = (props) => {
                     >
                       Select a category
                     </option>
-                    {categories.map((item) => (
+                    {pinCategories.map((item) => (
                       <option
                         key={item.name}
                         className="text-base border-0 outline-none capitalize bg-dark-brightest text-textColor-lightGray "
@@ -542,7 +542,7 @@ const NewLocationPage = (props) => {
                   <button
                     type="button"
                     onClick={loading ? null : createNewPin}
-                    className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-full w-28 outline-none"
+                    className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-md w-28 outline-none"
                   >
                     {loading ? <Bounce /> : "Save Pin"}
                   </button>

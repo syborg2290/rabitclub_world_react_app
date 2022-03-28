@@ -1,4 +1,4 @@
-export const categories = [
+export const pinCategories = [
   {
     name: "Resturant & Foods center",
     icon: "https://img.icons8.com/wired/64/000000/restaurant.png",
@@ -67,4 +67,26 @@ export const categories = [
     name: "Others",
     icon: "https://img.icons8.com/wired/64/000000/user-location.png",
   },
+];
+
+export const watchPartyCategories = [
+  "Animation",
+  "Action",
+  "Adventure",
+  "Cartoon & Anime",
+  "Autos & Vehicles",
+  "Music",
+  "Pets & Animals",
+  "Sports",
+  "Historical & Cultural",
+  "Wild life",
+  "Travel & Events",
+  "Gaming",
+  "Entertainment",
+  "Science & Technology",
+  "Education",
+  "Life style",
+  "Politicals",
+  "18+",
+  "Foods",
 ];

@@ -117,7 +117,7 @@ const CreatePinPostModal = (props) => {
           <span className="text-red-600 txt-sm font-bold">{errorText}</span>
         </div>
         {initialLoading ? (
-          <div className={"mx-auto self-center text-center mt-52"}>
+          <div className={"mx-auto self-center text-center my-10"}>
             <ImgLoader />
           </div>
         ) : (
@@ -191,19 +191,21 @@ const CreatePinPostModal = (props) => {
             )}
           </div>
         )}
-        <label className="cursor-pointer text-white font-bold self-center">
-          <div className="bg-backgroundColor-mainColor rounded-full p-1 hover:opacity-95 w-8 h-8">
-            <IoAdd className="w-6 h-6 self-center" />
-          </div>
-          <input
-            type="file"
-            name="upload-image"
-            className="w-0 h-0"
-            accept="image/*,video/*"
-            onChange={selectMedia}
-            multiple={true}
-          />
-        </label>
+        {!initialLoading && (
+          <label className="cursor-pointer text-white font-bold self-center">
+            <div className="bg-backgroundColor-mainColor rounded-md p-1 hover:opacity-95 w-8 h-8">
+              <IoAdd className="w-6 h-6 self-center" />
+            </div>
+            <input
+              type="file"
+              name="upload-image"
+              className="w-0 h-0"
+              accept="image/*,video/*"
+              onChange={selectMedia}
+              multiple={true}
+            />
+          </label>
+        )}
         <Input
           type="text"
           value={title}
@@ -226,7 +228,7 @@ const CreatePinPostModal = (props) => {
           <button
             type="button"
             onClick={isLoading ? null : submit}
-            className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-full w-28 outline-none"
+            className="bg-backgroundColor-mainColor hover:animate-pulse text-white font-bold p-2 rounded-md w-28 outline-none"
           >
             {isLoading ? <Bounce /> : "Post"}
           </button>

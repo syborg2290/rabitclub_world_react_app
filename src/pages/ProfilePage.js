@@ -220,11 +220,13 @@ const ProfilePage = (props) => {
                   <div className="flex">
                     <button
                       type="button"
-                      className="absolute bottom-3 left-3 p-3 rounded-full bg-backgroundColor-mainColor 
+                      className="absolute bottom-3 left-3 p-2 rounded-md bg-backgroundColor-mainColor 
                        text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                       onClick={saveCoverImage}
                     >
-                      <IoSaveOutline className="text-white  hover:opacity-70" />
+                      <div className="flex self-center mx-auto text-center">
+                        <IoSaveOutline className="text-white w-5 h-5 hover:opacity-70 mr-1" />
+                      </div>
                     </button>
                   </div>
                 ) : null}

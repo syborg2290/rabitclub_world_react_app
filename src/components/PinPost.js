@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
+import ImgLoader from "./common/loaders/ImgLoader";
+import VideoPlayer from "./common/VideoPlayer";
+import LazyLoadingImage from "./LazyLoadingImage";
 
 const PinPost = (props) => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [displayMedia, setDisplayMedia] = useState(null);
+  // eslint-disable-next-line
   const [mediaList, setMediaList] = useState([]);
 
   useEffect(() => {
@@ -32,9 +36,36 @@ const PinPost = (props) => {
     });
 
     // eslint-disable-next-line
-  }, [props?.post]);
+  }, []);
 
-  return <div className="relative"></div>;
+  return (
+    <div className="mx-1 my-1 rounded-md">
+      {isInitialLoading ? (
+        <div className={"mx-auto self-center text-center"}>
+          <ImgLoader />
+        </div>
+      ) : (
+        <div className="relative">
+          {displayMedia.media.type === "image" ? (
+            <LazyLoadingImage
+              image={displayMedia.media.url}
+              className="w-60 h-64 rounded-md cursor-pointer"
+            />
+          ) : (
+            <VideoPlayer
+              src={displayMedia.media.url}
+              className="object-cover w-60 h-64 rounded-md"
+            />
+          )}
+          {mediaList.length > 1 && (
+            <div className="bg-black text-white text-sm rounded-md mx-auto self-center text-center w-10 absolute left-3 top-1">
+              1/{mediaList.length}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PinPost;

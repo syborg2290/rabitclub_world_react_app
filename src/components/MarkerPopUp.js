@@ -1,7 +1,7 @@
 import React from "react";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { categories } from "../utils/categories";
+import { pinCategories } from "../utils/categories";
 import LazyLoadingImage from "./LazyLoadingImage";
 
 const MarkerPopUp = (props) => {
@@ -29,7 +29,8 @@ const MarkerPopUp = (props) => {
         <div className="flex justify-center align-middle">
           <img
             src={
-              categories.find((e) => e.name === props.markerData?.category).icon
+              pinCategories.find((e) => e.name === props.markerData?.category)
+                .icon
             }
             alt=""
             className="w-6 h-6 mr-2 mb-1"

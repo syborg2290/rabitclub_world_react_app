@@ -9,6 +9,7 @@ import NewLocationPage from "./pages/NewLocationPage";
 import NoInternetConnectionPage from "./pages/NoInternetConnectionPage";
 import ProfilePage from "./pages/ProfilePage";
 import PinPage from "./pages/PinPage";
+import WatchPartyPage from "./pages/WatchPartyPage";
 
 function Routing() {
   const location = useLocation();
@@ -45,6 +46,17 @@ function Routing() {
                 path="/pin/"
                 element={
                   user.user ? <PinPage user={user} /> : <Navigate to="/" />
+                }
+              />
+              <Route
+                exact
+                path="/watch-party/"
+                element={
+                  user.user ? (
+                    <WatchPartyPage user={user} />
+                  ) : (
+                    <Navigate to="/" />
+                  )
                 }
               />
               <Route path="*" element={<Navigate to="/" />} />

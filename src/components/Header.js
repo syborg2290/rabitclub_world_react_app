@@ -6,11 +6,15 @@ import {
   HiOutlineSearch,
   HiOutlineBell,
   HiOutlineChat,
-  HiOutlinePlus,
   HiOutlineChevronDown,
 } from "react-icons/hi";
 import ClickOutHandler from "react-clickout-handler";
-import { IoLogOutOutline, IoPerson, IoPersonOutline } from "react-icons/io5";
+import {
+  IoGridOutline,
+  IoLogOutOutline,
+  IoPerson,
+  IoPersonOutline,
+} from "react-icons/io5";
 import Button from "./common/Button";
 import AuthModalContext from "../context/AuthModalContext";
 import UserContext from "../context/UserContext";
@@ -20,6 +24,7 @@ const Header = () => {
   const [userDropdownVisibilityClass, setUserDropdownVisibilityClass] =
     useState("hidden");
   const [searchText, setSearchText] = useState("");
+  const [searchType, setSearchType] = useState("Pin");
   const authModalContext = useContext(AuthModalContext);
   const user = useContext(UserContext);
 
@@ -54,7 +59,7 @@ const Header = () => {
           <input
             type="text"
             className="bg-dark-brighter w-full text-sm p-1 pl-2 pr-0 block focus:outline-none text-white"
-            placeholder="Search anything on webdev"
+            placeholder={"search any #" + searchType}
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
@@ -71,7 +76,7 @@ const Header = () => {
               <HiOutlineBell className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>
             <button className="px-1 py-1">
-              <HiOutlinePlus className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
+              <IoGridOutline className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>
           </>
         )}
