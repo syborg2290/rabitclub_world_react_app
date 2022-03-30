@@ -85,7 +85,7 @@ const HomePage = () => {
       ) : blockLocation ? (
         <>
           <Empty
-            text="Sorry, we need to get your current location!"
+            text="Sorry, you have to allow current location permission!"
             opacity="opacity-50 "
             extraClasses="mt-10"
           />

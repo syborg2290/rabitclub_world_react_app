@@ -1,46 +1,141 @@
 import React, { useState } from "react";
-import { IoFilmOutline, IoTrashBinOutline } from "react-icons/io5";
+import {
+  IoFilmOutline,
+  IoImageOutline,
+  IoTrashBinOutline,
+} from "react-icons/io5";
+import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
 import Input from "../components/common/Input";
 import InitialLoader from "../components/common/loaders/InitialLoader";
 import WatchPartyLoader from "../components/common/loaders/WatchPartyLoader";
 import Textarea from "../components/common/Textarea";
 import VideoPlayer from "../components/common/VideoPlayer";
+import { client, gun } from "../config";
 import { watchPartyCategories } from "../utils/categories";
 
 const WatchPartyPage = (props) => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [category, setCategory] = useState("Select a category");
   const [errorText, setErrorText] = useState("");
+  const [thumbnail, setThumbnail] = useState(null);
   const [watchVideo, setWatchVideo] = useState(null);
+  const [videoDuration, setVideoDuration] = useState(0);
+  // eslint-disable-next-line
   const [chunks, setChunks] = useState([]);
 
   const selectVideo = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setWatchVideo(e.target.files[0]);
+      getVideoDuration(e.target.files[0]);
     }
   };
 
+  const selectThumbnail = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setThumbnail(e.target.files[0]);
+    }
+  };
+
+  function getVideoDuration(file) {
+    var video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = function () {
+      window.URL.revokeObjectURL(video.src);
+      setVideoDuration(video.duration);
+    };
+
+    video.src = URL.createObjectURL(file);
+  }
+
   const startWatchParty = async () => {
     try {
-      // setIsLoading(true);
+      setIsLoading(true);
       if (title !== "") {
         if (category !== "Select a category") {
-          if (watchVideo !== null) {
-            const filename = watchVideo.name;
-            const chunkSize = 60000; // In bytes
-            let start = 0;
-            var numberofChunks = Math.ceil(watchVideo.size / chunkSize);
-            for (var i = 0; i < numberofChunks; i++) {
-              const chunkEnd = Math.min(start + chunkSize, watchVideo.size);
-              const chunk = watchVideo.slice(start, chunkEnd);
-              start = chunkEnd;
-              chunks.push(chunk);
+          if (thumbnail !== null) {
+            if (watchVideo !== null) {
+              navigator.geolocation.getCurrentPosition(
+                async function (position) {
+                  const watchpartyId = uuidv4();
+                  const createdAt = new Date().toDateString();
+                  const thumbnailCreated = await client.add(thumbnail);
+                  const thumbnailUrl = `https://ipfs.infura.io/ipfs/${thumbnailCreated.path}`;
+
+                  var watchpartyObj = {
+                    _id: watchpartyId,
+                    createdBy: props.user.userId,
+                    title: title,
+                    category: category,
+                    description: about,
+                    thumbnail: thumbnailUrl,
+                    chunksCount: chunks.length,
+                    blobArr: null,
+                    videoDuration: videoDuration,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    createdAt: createdAt,
+                  };
+
+                  gun
+                    .get("watch_parties")
+                    .get("pending")
+                    .get(props.user.userId)
+                    .get(watchpartyId)
+                    .set(watchpartyObj);
+
+                  // const filename = watchVideo.name
+                  //   .split(".")
+                  //   .slice(0, -1)
+                  //   .join(".");
+
+                  const chunkSize = 60000; // In bytes
+                  (function (next) {
+                    var start = 0;
+                    var numberofChunks = Math.ceil(watchVideo.size / chunkSize);
+                    const chunkEnd = Math.min(
+                      start + chunkSize,
+                      watchVideo.size
+                    );
+                    for (var i = 0; i < numberofChunks; i++) {
+                      const chunk = watchVideo.slice(start, chunkEnd);
+                      chunks.push(chunk);
+                      start = chunkEnd;
+
+                      if (chunks.length === numberofChunks) next();
+                    }
+                  })(async function () {
+                    // const file = new File([newBlob], filename, {
+                    //   type: newBlob.type,
+                    // });
+
+                    navigate("/watch-party-room/", {
+                      state: {
+                        id: watchpartyId,
+                        chunksArr: chunks,
+                      },
+                    });
+                    setIsLoading(false);
+                  });
+                },
+                function (error) {
+                  setIsLoading(false);
+                  setErrorText(
+                    "Oops, you have to allow current location permission!"
+                  );
+                }
+              );
+            } else {
+              setIsLoading(false);
+              setErrorText("Oops, you have to select a video!");
             }
           } else {
             setIsLoading(false);
-            setErrorText("Oops, you have to select a video!");
+            setErrorText("Thumbnail is required!");
           }
         } else {
           setIsLoading(false);
@@ -58,8 +153,14 @@ const WatchPartyPage = (props) => {
   return (
     <div className="flex p-10 bg-dark m-10 rounded-md">
       {isLoading ? (
-        <div className="mx-auto self-center">
+        <div className="mx-auto self-center text-center my-20">
           <InitialLoader />
+          <span className="text-white text-4xl justify-center opacity-50">
+            Processing...
+          </span>
+          <div className="text-textColor-lightGray text-md justify-center mt-10 opacity-90">
+            Please wait a moment, this will take some time.
+          </div>
         </div>
       ) : (
         <div className="mx-auto self-center">
@@ -107,17 +208,59 @@ const WatchPartyPage = (props) => {
             ))}
           </select>
 
-          {!watchVideo ? (
+          {!thumbnail ? (
             // eslint-disable-next-line jsx-a11y/label-has-associated-control
             <label>
               <div className="flex flex-col flex-grow-0 items-center justify-center h-full bg-dark-brighter mt-5 rounded-md cursor-pointer">
+                <div className="flex flex-col justify-center items-center">
+                  <p className="font-bold text-2xl">
+                    <IoImageOutline className="w-36 h-36" />
+                  </p>
+                  <p className="text-lg">Click Here</p>
+                  <p className="mt-5 p-2 text-gray-400">
+                    Select a thumbnail for your watch party
+                  </p>
+                </div>
+              </div>
+              <input
+                type="file"
+                name="thumbnail"
+                onChange={selectThumbnail}
+                className="w-0 h-0"
+                accept="image/*"
+                multiple={false}
+              />
+            </label>
+          ) : (
+            <div className="relative h-full mt-5">
+              <img
+                src={URL.createObjectURL(thumbnail)}
+                alt=""
+                className="object-cover w-full h-64 rounded-md"
+              />
+              <button
+                type="button"
+                className="absolute bottom-3 left-3 p-2 rounded-full opacity-75 bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                onClick={() => {
+                  setThumbnail(null);
+                }}
+              >
+                <IoTrashBinOutline className="text-white" />
+              </button>
+            </div>
+          )}
+
+          {!watchVideo ? (
+            // eslint-disable-next-line jsx-a11y/label-has-associated-control
+            <label>
+              <div className="flex flex-col flex-grow-0 items-center justify-center h-full bg-dark-brighter mt-3 rounded-md cursor-pointer">
                 <div className="flex flex-col justify-center items-center">
                   <p className="font-bold text-2xl">
                     <IoFilmOutline className="w-36 h-36" />
                   </p>
                   <p className="text-lg">Click Here</p>
                   <p className="mt-5 p-2 text-gray-400">
-                    Let's watch together with others.
+                    Let's watch together with others
                   </p>
                 </div>
               </div>
@@ -131,7 +274,7 @@ const WatchPartyPage = (props) => {
               />
             </label>
           ) : (
-            <div className="relative h-full mt-5">
+            <div className="relative h-full mt-3">
               <VideoPlayer
                 src={URL.createObjectURL(watchVideo)}
                 className="object-cover w-full h-64 rounded-md"

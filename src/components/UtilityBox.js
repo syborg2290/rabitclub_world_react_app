@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IoFilmOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { gun } from "../config";
 import AuthModalContext from "../context/AuthModalContext";
 import NewPinModalContext from "../context/NewPinModalContext";
 import PreviousActionContext from "../context/PreviousActionContext";
@@ -20,6 +21,30 @@ const UtilityBox = () => {
     setLatitude(modalContext.coordinates.latitude);
     setLongitude(modalContext.coordinates.longitude);
   }, [modalContext.coordinates.latitude, modalContext.coordinates.longitude]);
+
+  const createWatchParty = () => {
+    try {
+      gun
+        .get("watch_parties")
+        .get("live")
+        .get(user.userId)
+        .not(function (key) {
+          if (key) {
+            if (user.user) {
+              navigate("/watch-party/");
+            } else {
+              previousActionContext.setPreviousAction({
+                path: "/watch-party",
+                values: {},
+              });
+              authModalContext.setShow("login");
+            }
+          }
+        });
+    } catch (error) {
+      console.debug(error);
+    }
+  };
 
   return (
     <div className="bg-dark mx-4 absolute z-1 top-10 right-0 w-2/7 h-3/4 rounded-md">
@@ -88,17 +113,7 @@ const UtilityBox = () => {
         <div className="mt-5">
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              if (user.user) {
-                navigate("/watch-party/");
-              } else {
-                previousActionContext.setPreviousAction({
-                  path: "/watch-party",
-                });
-                authModalContext.setShow("login");
-              }
-            }}
+            onClick={createWatchParty()}
             className="border border-white text-white p-1 rounded-md w-full outline-none hover:opacity-75"
           >
             <div className="flex justify-center align-middle">

@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import { Beforeunload } from "react-beforeunload";
-import { setLoggedService } from "./services/user";
+import { setLoggedService, setOnlineService } from "./services/user";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -11,6 +11,7 @@ ReactDOM.render(
       onBeforeunload={async (event) => {
         event.preventDefault();
         localStorage.setItem("logoutStatus", "true");
+        await setOnlineService(false);
         await setLoggedService(false);
       }}
     >

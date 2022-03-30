@@ -63,6 +63,8 @@ const NewLocationPage = (props) => {
       .once((data, key) => {
         if (data) {
           setIsPinsEmpty(false);
+          console.log("dfdgd");
+          return;
         }
       });
     setNewPinViewPort();

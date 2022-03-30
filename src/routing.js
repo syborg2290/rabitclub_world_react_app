@@ -10,14 +10,24 @@ import NoInternetConnectionPage from "./pages/NoInternetConnectionPage";
 import ProfilePage from "./pages/ProfilePage";
 import PinPage from "./pages/PinPage";
 import WatchPartyPage from "./pages/WatchPartyPage";
+import WatchPartyControlPage from "./pages/WatchPartyControlPage";
+import { setOnlineService } from "./services/user";
 
 function Routing() {
   const location = useLocation();
   const user = useContext(UserContext);
 
+  const changeStatusUser = async (status) => {
+    await setOnlineService(status);
+  };
+
   return (
     <div>
-      <Online>
+      <Online
+        onChange={async (isOnline) => {
+          await changeStatusUser(isOnline);
+        }}
+      >
         {!user.userLoading ? (
           <>
             <Header />
@@ -59,6 +69,17 @@ function Routing() {
                   )
                 }
               />
+              <Route
+                exact
+                path="/watch-party-room/"
+                element={
+                  user.user ? (
+                    <WatchPartyControlPage user={user} />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </>
@@ -66,7 +87,11 @@ function Routing() {
           <LoadingPage />
         )}
       </Online>
-      <Offline>
+      <Offline
+        onChange={async (isOnline) => {
+          await changeStatusUser(isOnline);
+        }}
+      >
         <NoInternetConnectionPage />
       </Offline>
     </div>

@@ -7,6 +7,8 @@ import {
   getUserService,
   logoutService,
   setLoggedService,
+  setOnlineRequestTimeService,
+  setOnlineService,
 } from "./services/user";
 import UserContext from "./context/UserContext";
 import Routing from "./routing";
@@ -14,6 +16,7 @@ import NewPinModalContext from "./context/NewPinModalContext";
 import PreviousActionContext from "./context/PreviousActionContext";
 
 function App() {
+  const MINUTE_MS = 60000;
   const [showAuthModal, setShowAuthModal] = useState(false);
   // const [showNewPinModal, setShowNewPinModal] = useState(false);
   const [previousAction, setPreviousAction] = useState({});
@@ -23,6 +26,14 @@ function App() {
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
   const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      await setOnlineRequestTimeService();
+    }, MINUTE_MS);
+
+    return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
+  }, []);
 
   useEffect(() => {
     getUser();
@@ -42,12 +53,15 @@ function App() {
   };
 
   const logout = async () => {
-    const resSetLogged = await setLoggedService(false);
-    if (resSetLogged["status"] === true) {
-      localStorage.setItem("logoutStatus", "true");
-      await logoutService();
-      setUser(null);
-      setUserId(null);
+    const resSetOnline = await setOnlineService(false);
+    if (resSetOnline["status"] === true) {
+      const resSetLogged = await setLoggedService(false);
+      if (resSetLogged["status"] === true) {
+        localStorage.setItem("logoutStatus", "true");
+        await logoutService();
+        setUser(null);
+        setUserId(null);
+      }
     }
   };
 

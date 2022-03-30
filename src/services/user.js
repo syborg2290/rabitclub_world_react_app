@@ -70,6 +70,56 @@ export const setLoggedService = async (status) => {
   }
 };
 
+export const setOnlineService = async (status) => {
+  try {
+    const data = { status };
+    const response = await axios.post(api_baseUrl + "setOnline", data, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: true };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const setOnlineRequestTimeService = async () => {
+  try {
+    const data = {};
+    const response = await axios.post(
+      api_baseUrl + "setOnlineRequestTime",
+      data,
+      {
+        withCredentials: true,
+      }
+    );
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: true };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
 export const getUserService = async () => {
   try {
     const response = await axios.get(api_baseUrl + "user", {
