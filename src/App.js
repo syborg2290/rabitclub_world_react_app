@@ -28,15 +28,12 @@ function App() {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
+    getUser();
     const interval = setInterval(async () => {
       await setOnlineRequestTimeService();
     }, MINUTE_MS);
 
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
-  }, []);
-
-  useEffect(() => {
-    getUser();
     // eslint-disable-next-line
   }, []);
 

@@ -74,19 +74,12 @@ const WatchPartyPage = (props) => {
                     description: about,
                     thumbnail: thumbnailUrl,
                     chunksCount: chunks.length,
-                    blobArr: null,
+                    ipfsBlobUrlCount: 0,
                     videoDuration: videoDuration,
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                     createdAt: createdAt,
                   };
-
-                  gun
-                    .get("watch_parties")
-                    .get("pending")
-                    .get(props.user.userId)
-                    .get(watchpartyId)
-                    .set(watchpartyObj);
 
                   // const filename = watchVideo.name
                   //   .split(".")
@@ -113,9 +106,17 @@ const WatchPartyPage = (props) => {
                     //   type: newBlob.type,
                     // });
 
+                    gun
+                      .get("watch_parties")
+                      .get("live")
+                      .get(props.user.userId)
+                      .get(watchpartyId)
+                      .set(watchpartyObj);
+
                     navigate("/watch-party-room/", {
                       state: {
-                        id: watchpartyId,
+                        userId: props.user.userId,
+                        watchpartyId: watchpartyId,
                         chunksArr: chunks,
                       },
                     });
@@ -186,7 +187,7 @@ const WatchPartyPage = (props) => {
             style={{
               scrollbarWidth: "none",
             }}
-            className="outline-none text-sm border-b-2 p-2 text-white overflow-x-scroll w-full mt-5"
+            className="outline-none text-sm border-b-2 p-2 text-white overflow-x-scroll overflow-y-scroll w-full mt-5"
           />
           <select
             onChange={(e) => {

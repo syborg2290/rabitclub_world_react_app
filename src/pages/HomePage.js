@@ -53,14 +53,14 @@ const HomePage = () => {
         navigator.geolocation.getCurrentPosition(
           function (position) {
             modalContext.setViewport({
-              latitude: position ? position.coords.latitude : 20.5937,
-              longitude: position ? position.coords.longitude : 78.9629,
+              latitude: position ? position?.coords?.latitude : 20.5937,
+              longitude: position ? position?.coords?.longitude : 78.9629,
               zoom: 12,
             });
 
             modalContext.setCoordinates({
-              latitude: position ? position.coords.latitude : 20.5937,
-              longitude: position ? position.coords.longitude : 78.9629,
+              latitude: position ? position?.coords?.latitude : 20.5937,
+              longitude: position ? position?.coords?.longitude : 78.9629,
             });
             setIsLoading(false);
           },
@@ -92,48 +92,50 @@ const HomePage = () => {
         </>
       ) : (
         <>
-          <Map
-            mapboxAccessToken={process.env.REACT_APP_MAPBOX}
-            {...modalContext.viewport}
-            minZoom={8}
-            style={{ width: "100vw", height: "100vh" }}
-            mapStyle="mapbox://styles/kasunthaksala/cl0nobhzo001a15ofqt7b89mk"
-            onMove={(evt) => modalContext.setViewport(evt.viewState)}
-            onZoom={(e) => {
-              setZoom(e.viewState.zoom);
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              modalContext.setCoordinates({
-                latitude: e.lngLat.lat,
-                longitude: e.lngLat.lng,
-              });
-              modalContext.setViewport({
-                latitude: e.lngLat.lat,
-                longitude: e.lngLat.lng,
-                // zoom: 12,
-              });
-              // setTimeout(() => modalContext.setShow(true), 500);
-            }}
-          >
-            {modalContext?.coordinates?.latitude &&
-              modalContext?.coordinates?.longitude && (
-                <MapMarker viewport={modalContext.viewport} />
-              )}
-            {allPins.map((each) => {
-              return (
-                <PinMarker
-                  key={each.data._id}
-                  category={each.data.category}
-                  pinData={each.data}
-                  latitude={each.data.latitude}
-                  longitude={each.data.longitude}
-                  zoom={zoom}
-                />
-              );
-            })}
-          </Map>
-          <UtilityBox />
+          {modalContext.viewport && (
+            <Map
+              mapboxAccessToken={process.env.REACT_APP_MAPBOX}
+              {...modalContext.viewport}
+              minZoom={8}
+              style={{ width: "100vw", height: "100vh" }}
+              mapStyle="mapbox://styles/kasunthaksala/cl0nobhzo001a15ofqt7b89mk"
+              onMove={(evt) => modalContext.setViewport(evt.viewState)}
+              onZoom={(e) => {
+                setZoom(e.viewState.zoom);
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                modalContext.setCoordinates({
+                  latitude: e.lngLat.lat,
+                  longitude: e.lngLat.lng,
+                });
+                modalContext.setViewport({
+                  latitude: e.lngLat.lat,
+                  longitude: e.lngLat.lng,
+                  // zoom: 12,
+                });
+                // setTimeout(() => modalContext.setShow(true), 500);
+              }}
+            >
+              {modalContext?.coordinates?.latitude &&
+                modalContext?.coordinates?.longitude && (
+                  <MapMarker viewport={modalContext.viewport} />
+                )}
+              {allPins.map((each) => {
+                return (
+                  <PinMarker
+                    key={each.data._id}
+                    category={each.data.category}
+                    pinData={each.data}
+                    latitude={each.data.latitude}
+                    longitude={each.data.longitude}
+                    zoom={zoom}
+                  />
+                );
+              })}
+            </Map>
+          )}
+          {modalContext.viewport && <UtilityBox />}
         </>
       )}
     </div>

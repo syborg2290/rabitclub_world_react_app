@@ -16,31 +16,62 @@ const UtilityBox = () => {
   const user = useContext(UserContext);
   const [currentLat, setLatitude] = useState(0);
   const [currentLng, setLongitude] = useState(0);
+  const [isWatchPartiesEmpty, setIsWatchPartiesEmpty] = useState(true);
 
   useEffect(() => {
-    setLatitude(modalContext.coordinates.latitude);
-    setLongitude(modalContext.coordinates.longitude);
-  }, [modalContext.coordinates.latitude, modalContext.coordinates.longitude]);
+    checkIsWatchPartiesExist();
+    setLatitude(modalContext?.coordinates?.latitude);
+    setLongitude(modalContext?.coordinates?.longitude);
+
+    // eslint-disable-next-line
+  }, [
+    modalContext?.coordinates?.latitude,
+    modalContext?.coordinates?.longitude,
+  ]);
+
+  const checkIsWatchPartiesExist = () => {
+    gun
+      .get("watch_parties")
+      .map()
+      .once((data, key) => {
+        if (data) {
+          setIsWatchPartiesEmpty(false);
+          return;
+        }
+      });
+  };
 
   const createWatchParty = () => {
     try {
-      gun
-        .get("watch_parties")
-        .get("live")
-        .get(user.userId)
-        .not(function (key) {
-          if (key) {
-            if (user.user) {
-              navigate("/watch-party/");
-            } else {
-              previousActionContext.setPreviousAction({
-                path: "/watch-party",
-                values: {},
-              });
-              authModalContext.setShow("login");
+      if (isWatchPartiesEmpty) {
+        if (user.user) {
+          navigate("/watch-party/");
+        } else {
+          previousActionContext.setPreviousAction({
+            path: "/watch-party",
+            values: {},
+          });
+          authModalContext.setShow("login");
+        }
+      } else {
+        gun
+          .get("watch_parties")
+          .get("live")
+          .get(user.userId)
+          .not((key) => {
+            if (key) {
+              if (user.user) {
+                navigate("/watch-party/");
+              } else {
+                previousActionContext.setPreviousAction({
+                  path: "/watch-party",
+                  values: {},
+                });
+                authModalContext.setShow("login");
+              }
             }
-          }
-        });
+          });
+      }
     } catch (error) {
       console.debug(error);
     }
