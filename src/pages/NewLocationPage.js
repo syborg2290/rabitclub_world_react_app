@@ -27,6 +27,7 @@ import Button from "../components/common/Button";
 import CropModal from "../components/CropModal";
 import { days } from "../utils/weekDays";
 import NewPinModalContext from "../context/NewPinModalContext";
+import { getCurrentDateService } from "../services/utils";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
@@ -145,29 +146,31 @@ const NewLocationPage = (props) => {
 
             if (user.userId !== null) {
               const pinId = uuidv4();
-
-              const createdAt = new Date().toDateString();
-              var pinObj = {
-                _id: pinId,
-                owner: user.userId,
-                nameOfPin: name,
-                description: about,
-                website: website,
-                category: category,
-                smallPinImage: smallUrl,
-                defaultPinImage: url,
-                allowToAnyone: allowToAnyone,
-                keywords: tags.toString(),
-                latitude: location.state.latitude,
-                longitude: location.state.longitude,
-                openDays: openDays.toString(),
-                openTime: openTime,
-                closeTime: closeTime,
-                createdAt: createdAt,
-              };
-              gun.get("pins").set(pinObj);
-              setLoading(false);
-              navigate("/");
+              const serverDate = await getCurrentDateService();
+              if (serverDate) {
+                const createdAt = new Date(serverDate).toDateString();
+                var pinObj = {
+                  _id: pinId,
+                  owner: user.userId,
+                  nameOfPin: name,
+                  description: about,
+                  website: website,
+                  category: category,
+                  smallPinImage: smallUrl,
+                  defaultPinImage: url,
+                  allowToAnyone: allowToAnyone,
+                  keywords: tags.toString(),
+                  latitude: location.state.latitude,
+                  longitude: location.state.longitude,
+                  openDays: openDays.toString(),
+                  openTime: openTime,
+                  closeTime: closeTime,
+                  createdAt: createdAt,
+                };
+                gun.get("pins").set(pinObj);
+                setLoading(false);
+                navigate("/");
+              }
             } else {
               setLoading(false);
             }
@@ -199,9 +202,9 @@ const NewLocationPage = (props) => {
           } else {
             gun
               .get("pins")
-              .map((pin) => pin.nameOfPin === name)
-              .once(async (isExistingName, key) => {
-                if (!isExistingName) {
+              .map()
+              .once((pin, key) => {
+                if (pin.nameOfPin !== name) {
                   pinSaveFunc();
                 } else {
                   setLoading(false);
@@ -410,11 +413,11 @@ const NewLocationPage = (props) => {
                 </div>
                 <div className="flex mb-5">
                   {tags.length > 2 && (
-                    <IoChevronForwardOutline
+                    <IoChevronBackOutline
                       className="text-white mt-5 justify-center self-center cursor-pointer w-5 h-5"
                       onClick={(e) => {
                         e.preventDefault();
-                        scrollbar.current.scrollLeft += 20;
+                        scrollbar.current.scrollLeft -= 20;
                       }}
                     />
                   )}
@@ -451,11 +454,11 @@ const NewLocationPage = (props) => {
                     ))}
                   </div>
                   {tags.length > 2 && (
-                    <IoChevronBackOutline
+                    <IoChevronForwardOutline
                       className="text-white mt-5 justify-center self-center cursor-pointer w-5 h-5"
                       onClick={(e) => {
                         e.preventDefault();
-                        scrollbar.current.scrollLeft -= 20;
+                        scrollbar.current.scrollLeft += 20;
                       }}
                     />
                   )}

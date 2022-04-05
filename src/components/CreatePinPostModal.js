@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   IoAdd,
   IoChevronBackOutline,
@@ -13,6 +13,7 @@ import Bounce from "./common/loaders/Bounce";
 import ImgLoader from "./common/loaders/ImgLoader";
 import Textarea from "./common/Textarea";
 import VideoPlayer from "./common/VideoPlayer";
+import { getCurrentDateService } from "../services/utils";
 
 const CreatePinPostModal = (props) => {
   const visibleClass = props.show !== false ? "block" : "hidden";
@@ -22,6 +23,7 @@ const CreatePinPostModal = (props) => {
   const [description, setDescription] = useState("");
   const [errorText, setErrorText] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     setDisplayMedia({ index: 0, media: props?.mediaList[0] });
@@ -50,22 +52,25 @@ const CreatePinPostModal = (props) => {
               uploadedUrls.push(JSON.stringify(obj));
               if (uploadedUrls.length === props.mediaList.length) next();
             });
-          })(function () {
+          })(async function () {
             const pinPostId = uuidv4();
-            const createdAt = new Date().toDateString();
-            var pinPostObj = {
-              _id: pinPostId,
-              pinId: props.pinId,
-              owner: props.currentUser,
-              title: title,
-              description: description,
-              urlsList: uploadedUrls.toString(),
-              createdAt: createdAt,
-            };
-            gun.get("pin_posts").get(props.pinId).set(pinPostObj);
-            setIsLoading(false);
-            props.setMediaList([]);
-            props.setShow(false);
+            const serverDate = await getCurrentDateService();
+            if (serverDate) {
+              const createdAt = new Date(serverDate).toDateString();
+              var pinPostObj = {
+                _id: pinPostId,
+                pinId: props.pinId,
+                owner: props.currentUser,
+                title: title,
+                description: description,
+                urlsList: uploadedUrls.toString(),
+                createdAt: createdAt,
+              };
+              gun.get("pin_posts").get(props.pinId).set(pinPostObj);
+              setIsLoading(false);
+              props.setMediaList([]);
+              props.setShow(false);
+            }
           });
         } else {
           setIsLoading(false);
@@ -123,14 +128,15 @@ const CreatePinPostModal = (props) => {
         ) : (
           <div className="flex justify-center align-middle">
             {props?.mediaList.length > 1 && (
-              <IoChevronForwardOutline
+              <IoChevronBackOutline
                 className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (props?.mediaList.length > displayMedia.index + 1) {
+                  if (displayMedia.index > 0) {
+                    videoRef.current.pause();
                     setDisplayMedia({
-                      index: displayMedia.index + 1,
-                      media: props?.mediaList[displayMedia.index + 1],
+                      index: displayMedia.index - 1,
+                      media: props?.mediaList[displayMedia.index - 1],
                     });
                   }
                 }}
@@ -148,6 +154,7 @@ const CreatePinPostModal = (props) => {
                   <VideoPlayer
                     src={displayMedia.media.fileUrl}
                     className="object-cover w-60 h-60 rounded-md"
+                    videoRef={videoRef}
                   />
                 )}
 
@@ -176,14 +183,14 @@ const CreatePinPostModal = (props) => {
             </div>
 
             {props?.mediaList.length > 1 && (
-              <IoChevronBackOutline
+              <IoChevronForwardOutline
                 className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (displayMedia.index > 0) {
+                  if (props?.mediaList.length > displayMedia.index + 1) {
                     setDisplayMedia({
-                      index: displayMedia.index - 1,
-                      media: props?.mediaList[displayMedia.index - 1],
+                      index: displayMedia.index + 1,
+                      media: props?.mediaList[displayMedia.index + 1],
                     });
                   }
                 }}

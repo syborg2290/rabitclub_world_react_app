@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   IoPauseOutline,
   IoVolumeHighOutline,
@@ -6,22 +6,23 @@ import {
 } from "react-icons/io5";
 
 const VideoPlayer = (props) => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMute, setIsMute] = useState(false);
-  const videoRef = useRef(null);
+  // const [isPlaying, setIsPlaying] = useState(false);
 
   const playOrPause = useCallback(() => {
-    if (videoRef.current.paused || videoRef.current.ended) {
-      videoRef.current.play();
+    if (props.videoRef?.current.paused || props.videoRef?.current.ended) {
+      props.videoRef?.current.play();
     } else {
-      videoRef.current.pause();
+      props.videoRef?.current.pause();
     }
-  }, []);
+  }, [props.videoRef]);
 
-  const onPlay = useCallback(() => setIsPlaying(true), []);
+  // const onPlay = useCallback(() => {
+  //   setIsPlaying(true);
+  // }, []);
 
-  const onPause = useCallback(() => setIsPlaying(false), []);
+  // const onPause = useCallback(() => setIsPlaying(false), []);
 
   return (
     <div
@@ -30,41 +31,43 @@ const VideoPlayer = (props) => {
       onMouseOut={() => setIsMouseOver(false)}
     >
       <video
-        onPlay={onPlay}
-        onPause={onPause}
+        // onPlay={onPlay}
+        // onPause={onPause}
         muted={isMute}
-        ref={videoRef}
+        ref={props.videoRef}
         src={props.src}
         className={props.className}
       />
-      <div
-        onClick={playOrPause}
-        className="absolute w-10 h-10 top-24 bottom-0 left-0 right-0 mx-auto self-center text-center cursor-pointer"
-      >
-        {isPlaying ? (
-          <IoPauseOutline
-            className={`text-white ${
-              isPlaying
-                ? isMouseOver
-                  ? "opacity-100 w-10 h-10 bg-black rounded-full p-1"
-                  : "opacity-0"
-                : "opacity-100 w-10 h-10"
-            }`}
-          />
-        ) : (
-          <img
-            src={require("../../assets/images/play.png")}
-            alt=""
-            className={`${
-              isPlaying
-                ? isMouseOver
-                  ? "opacity-100 w-10 h-10"
-                  : "opacity-0"
-                : "opacity-100 w-10 h-10 bg-black rounded-full p-1"
-            }`}
-          />
-        )}
-      </div>
+      {props.videoRef.current !== null && (
+        <div
+          onClick={playOrPause}
+          className="absolute w-10 h-10 top-1/2 left-0 right-0 m-auto cursor-pointer"
+        >
+          {!props.videoRef?.current.paused ? (
+            <IoPauseOutline
+              className={`text-white ${
+                !props.videoRef?.current.paused
+                  ? isMouseOver
+                    ? "opacity-100 w-10 h-10 bg-black rounded-full p-1"
+                    : "opacity-0"
+                  : "opacity-100 w-10 h-10"
+              }`}
+            />
+          ) : (
+            <img
+              src={require("../../assets/images/play.png")}
+              alt=""
+              className={`${
+                !props.videoRef?.current.paused
+                  ? isMouseOver
+                    ? "opacity-100 w-10 h-10"
+                    : "opacity-0"
+                  : "opacity-100 w-10 h-10 bg-black rounded-full p-1"
+              }`}
+            />
+          )}
+        </div>
+      )}
       <div
         className="absolute cursor-pointer p-1 right-3 bottom-3 bg-black opacity-75 rounded-full"
         onClick={() => setIsMute(!isMute)}

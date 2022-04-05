@@ -6,6 +6,7 @@ import NewPinModalContext from "../context/NewPinModalContext";
 import UtilityBox from "../components/UtilityBox";
 import { gun } from "../config";
 import PinMarker from "../components/PinMarker";
+import WatchPartyMarker from "../components/WatchPartyMarker";
 import Empty from "../components/common/Empty";
 import PlaneLoader from "../components/common/loaders/PlaneLoader";
 
@@ -14,12 +15,13 @@ const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [blockLocation, setBlockLocation] = useState(false);
   const [allPins, setAllPins] = useState([]);
+  const [allWatchParties, setAllWatchParties] = useState([]);
   const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
     getAllPins();
+    getAllWatchParties();
     getCurrentPosition();
-
     // eslint-disable-next-line
   }, []);
 
@@ -35,6 +37,29 @@ const HomePage = () => {
               data: data,
             });
             setAllPins([...allPins]);
+          }
+        });
+    } catch (error) {
+      console.debug(error);
+    }
+  };
+
+  const getAllWatchParties = () => {
+    try {
+      gun
+        .get("watch_parties")
+        .map()
+        .on((data, key) => {
+          if (data.status === "live") {
+            if (
+              allWatchParties.filter((e) => e.data._id === data._id).length <= 0
+            ) {
+              allWatchParties.push({
+                key: key,
+                data: data,
+              });
+              setAllWatchParties([...allWatchParties]);
+            }
           }
         });
     } catch (error) {
@@ -127,6 +152,16 @@ const HomePage = () => {
                     key={each.data._id}
                     category={each.data.category}
                     pinData={each.data}
+                    latitude={each.data.latitude}
+                    longitude={each.data.longitude}
+                    zoom={zoom}
+                  />
+                );
+              })}
+              {allWatchParties.map((each) => {
+                return (
+                  <WatchPartyMarker
+                    key={each.data._id}
                     latitude={each.data.latitude}
                     longitude={each.data.longitude}
                     zoom={zoom}

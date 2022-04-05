@@ -1,142 +1,95 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
+  IoAdd,
+  IoChevronBackOutline,
+  IoChevronForwardOutline,
   IoFilmOutline,
-  IoImageOutline,
   IoTrashBinOutline,
 } from "react-icons/io5";
 import { v4 as uuidv4 } from "uuid";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Input from "../components/common/Input";
 import InitialLoader from "../components/common/loaders/InitialLoader";
 import WatchPartyLoader from "../components/common/loaders/WatchPartyLoader";
 import Textarea from "../components/common/Textarea";
 import VideoPlayer from "../components/common/VideoPlayer";
-import { client, gun } from "../config";
 import { watchPartyCategories } from "../utils/categories";
 
 const WatchPartyPage = (props) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const [category, setCategory] = useState("Select a category");
   const [errorText, setErrorText] = useState("");
-  const [thumbnail, setThumbnail] = useState(null);
-  const [watchVideo, setWatchVideo] = useState(null);
-  const [videoDuration, setVideoDuration] = useState(0);
-  // eslint-disable-next-line
-  const [chunks, setChunks] = useState([]);
+  const [watchVideoList, setWatchVideoList] = useState([]);
+  const [displayVideo, setDisplayVideo] = useState(null);
+  const videoRef = useRef(null);
 
-  const selectVideo = (e) => {
+  const selectVideos = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setWatchVideo(e.target.files[0]);
-      getVideoDuration(e.target.files[0]);
+      for (var i = 0; i < e.target.files.length; i++) {
+        if (e.target.files[i].size < 2147483648) {
+          setDisplayVideo({ index: 0, file: e.target.files[0] });
+          watchVideoList.push(e.target.files[i]);
+          setWatchVideoList([...watchVideoList]);
+        }
+      }
     }
   };
 
-  const selectThumbnail = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setThumbnail(e.target.files[0]);
-    }
-  };
+  // function getVideoDuration(file) {
+  //   let video = document.createElement("video");
+  //   video.preload = "metadata";
 
-  function getVideoDuration(file) {
-    var video = document.createElement("video");
-    video.preload = "metadata";
+  //   video.onloadedmetadata = function () {
+  //     window.URL.revokeObjectURL(video.src);
+  //     setVideoDuration(video.duration);
+  //   };
 
-    video.onloadedmetadata = function () {
-      window.URL.revokeObjectURL(video.src);
-      setVideoDuration(video.duration);
-    };
-
-    video.src = URL.createObjectURL(file);
-  }
+  //   video.src = URL.createObjectURL(file);
+  // }
 
   const startWatchParty = async () => {
     try {
       setIsLoading(true);
       if (title !== "") {
         if (category !== "Select a category") {
-          if (thumbnail !== null) {
-            if (watchVideo !== null) {
-              navigator.geolocation.getCurrentPosition(
-                async function (position) {
-                  const watchpartyId = uuidv4();
-                  const createdAt = new Date().toDateString();
-                  const thumbnailCreated = await client.add(thumbnail);
-                  const thumbnailUrl = `https://ipfs.infura.io/ipfs/${thumbnailCreated.path}`;
+          if (watchVideoList.length > 0) {
+            const watchpartyId = uuidv4();
+            const serverDate = await getCurrentDateService();
+            if (serverDate) {
+              const createdAt = new Date(serverDate).toDateString();
 
-                  var watchpartyObj = {
-                    _id: watchpartyId,
-                    createdBy: props.user.userId,
-                    title: title,
-                    category: category,
-                    description: about,
-                    thumbnail: thumbnailUrl,
-                    chunksCount: chunks.length,
-                    ipfsBlobUrlCount: 0,
-                    videoDuration: videoDuration,
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                    createdAt: createdAt,
-                  };
+              // const filename = watchVideo.name.split(".").slice(0, -1).join(".");
 
-                  // const filename = watchVideo.name
-                  //   .split(".")
-                  //   .slice(0, -1)
-                  //   .join(".");
+              var watchpartyObj = {
+                _id: watchpartyId,
+                status: "live",
+                createdBy: props.user.userId,
+                title: title,
+                category: category,
+                description: about,
+                latitude: location.state.latitude,
+                longitude: location.state.longitude,
+                createdAt: createdAt,
+              };
 
-                  const chunkSize = 60000; // In bytes
-                  (function (next) {
-                    var start = 0;
-                    var numberofChunks = Math.ceil(watchVideo.size / chunkSize);
-                    const chunkEnd = Math.min(
-                      start + chunkSize,
-                      watchVideo.size
-                    );
-                    for (var i = 0; i < numberofChunks; i++) {
-                      const chunk = watchVideo.slice(start, chunkEnd);
-                      chunks.push(chunk);
-                      start = chunkEnd;
-
-                      if (chunks.length === numberofChunks) next();
-                    }
-                  })(async function () {
-                    // const file = new File([newBlob], filename, {
-                    //   type: newBlob.type,
-                    // });
-
-                    gun
-                      .get("watch_parties")
-                      .get("live")
-                      .get(props.user.userId)
-                      .get(watchpartyId)
-                      .set(watchpartyObj);
-
-                    navigate("/watch-party-room/", {
-                      state: {
-                        userId: props.user.userId,
-                        watchpartyId: watchpartyId,
-                        chunksArr: chunks,
-                      },
-                    });
-                    setIsLoading(false);
-                  });
-                },
-                function (error) {
-                  setIsLoading(false);
-                  setErrorText(
-                    "Oops, you have to allow current location permission!"
-                  );
-                }
-              );
-            } else {
               setIsLoading(false);
-              setErrorText("Oops, you have to select a video!");
+
+              navigate("/watch-party-room/", {
+                state: {
+                  userId: props.user.userId,
+                  watchpartyId: watchpartyId,
+                  watchpartyObj: watchpartyObj,
+                  videos: watchVideoList,
+                },
+              });
             }
           } else {
             setIsLoading(false);
-            setErrorText("Thumbnail is required!");
+            setErrorText("Oops, you have to select a video!");
           }
         } else {
           setIsLoading(false);
@@ -152,7 +105,7 @@ const WatchPartyPage = (props) => {
   };
 
   return (
-    <div className="flex p-10 bg-dark m-10 rounded-md">
+    <div className="flex p-10 bg-dark m-10 rounded-md justify-center align-middle">
       {isLoading ? (
         <div className="mx-auto self-center text-center my-20">
           <InitialLoader />
@@ -164,7 +117,7 @@ const WatchPartyPage = (props) => {
           </div>
         </div>
       ) : (
-        <div className="mx-auto self-center">
+        <div className="w-1/2">
           <span className="text-3xl font-bold break-words text-white mr-2 flex justify-center align-middle">
             Start Your Watch Party
           </span>
@@ -208,96 +161,126 @@ const WatchPartyPage = (props) => {
               </option>
             ))}
           </select>
+          <div className="mt-5 w-full">
+            {watchVideoList.length <= 0 ? (
+              // eslint-disable-next-line jsx-a11y/label-has-associated-control
+              <label>
+                <div className="flex h-max flex-col flex-grow-0 items-center justify-center bg-dark-brighter mt-3 rounded-md cursor-pointer">
+                  <div className="flex flex-col justify-center items-center">
+                    <p className="font-bold text-2xl">
+                      <IoFilmOutline className="w-36 h-36" />
+                    </p>
+                    <p className="text-lg">
+                      Click Here(Max size for each is 2GB)
+                    </p>
+                    <p className="mt-5 p-2 text-gray-400">
+                      Let's watch together with others
+                    </p>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  name="watch-video"
+                  onChange={selectVideos}
+                  className="w-0 h-0"
+                  accept="video/*"
+                  multiple={true}
+                />
+              </label>
+            ) : (
+              <div>
+                <div className="flex justify-center align-middle w-full">
+                  {watchVideoList.length > 1 && (
+                    <IoChevronBackOutline
+                      className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (displayVideo.index > 0) {
+                          videoRef.current.pause();
 
-          {!thumbnail ? (
-            // eslint-disable-next-line jsx-a11y/label-has-associated-control
-            <label>
-              <div className="flex flex-col flex-grow-0 items-center justify-center h-full bg-dark-brighter mt-5 rounded-md cursor-pointer">
-                <div className="flex flex-col justify-center items-center">
-                  <p className="font-bold text-2xl">
-                    <IoImageOutline className="w-36 h-36" />
-                  </p>
-                  <p className="text-lg">Click Here</p>
-                  <p className="mt-5 p-2 text-gray-400">
-                    Select a thumbnail for your watch party
-                  </p>
+                          setDisplayVideo({
+                            index: displayVideo.index - 1,
+                            file: watchVideoList[displayVideo.index - 1],
+                          });
+                        }
+                      }}
+                    />
+                  )}
+                  <div className="relative h-full mt-3">
+                    <VideoPlayer
+                      src={URL.createObjectURL(displayVideo.file)}
+                      className="object-cover w-full h-64 rounded-md"
+                      videoRef={videoRef}
+                    />
+
+                    <div className="bg-black rounded-full px-2 py-1 absolute left-3 top-1 text-white">
+                      {displayVideo.index + 1}/{watchVideoList.length}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="absolute bottom-3 left-3 p-2 rounded-full opacity-75 bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                      onClick={() => {
+                        if (watchVideoList.length === 1) {
+                          setDisplayVideo(null);
+                          setWatchVideoList([]);
+                        } else {
+                          const current = displayVideo.index;
+                          watchVideoList.splice(current, 1);
+                          setWatchVideoList([...watchVideoList]);
+                          const indexRe =
+                            watchVideoList.length === current ? 0 : current;
+                          setDisplayVideo({
+                            index: indexRe,
+                            file: watchVideoList[indexRe],
+                          });
+                        }
+                      }}
+                    >
+                      <IoTrashBinOutline className="text-white" />
+                    </button>
+                  </div>
+                  {watchVideoList.length > 1 && (
+                    <IoChevronForwardOutline
+                      className="text-white mt-5 justify-center self-center w-7 h-7 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (watchVideoList.length > displayVideo.index + 1) {
+                          videoRef.current.pause();
+                          setDisplayVideo({
+                            index: displayVideo.index + 1,
+                            file: watchVideoList[displayVideo.index + 1],
+                          });
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="flex justify-center align-middle mt-5">
+                  <label className="cursor-pointer text-white font-bold self-center">
+                    <div className="bg-backgroundColor-mainColor rounded-md p-1 hover:opacity-95 w-8 h-8">
+                      <IoAdd className="w-6 h-6 self-center" />
+                    </div>
+                    <input
+                      type="file"
+                      name="upload-image"
+                      className="w-0 h-0"
+                      accept="video/*"
+                      onChange={selectVideos}
+                      multiple={true}
+                    />
+                  </label>
                 </div>
               </div>
-              <input
-                type="file"
-                name="thumbnail"
-                onChange={selectThumbnail}
-                className="w-0 h-0"
-                accept="image/*"
-                multiple={false}
-              />
-            </label>
-          ) : (
-            <div className="relative h-full mt-5">
-              <img
-                src={URL.createObjectURL(thumbnail)}
-                alt=""
-                className="object-cover w-full h-64 rounded-md"
-              />
-              <button
-                type="button"
-                className="absolute bottom-3 left-3 p-2 rounded-full opacity-75 bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                onClick={() => {
-                  setThumbnail(null);
-                }}
-              >
-                <IoTrashBinOutline className="text-white" />
-              </button>
-            </div>
-          )}
-
-          {!watchVideo ? (
-            // eslint-disable-next-line jsx-a11y/label-has-associated-control
-            <label>
-              <div className="flex flex-col flex-grow-0 items-center justify-center h-full bg-dark-brighter mt-3 rounded-md cursor-pointer">
-                <div className="flex flex-col justify-center items-center">
-                  <p className="font-bold text-2xl">
-                    <IoFilmOutline className="w-36 h-36" />
-                  </p>
-                  <p className="text-lg">Click Here</p>
-                  <p className="mt-5 p-2 text-gray-400">
-                    Let's watch together with others
-                  </p>
-                </div>
-              </div>
-              <input
-                type="file"
-                name="watch-video"
-                onChange={selectVideo}
-                className="w-0 h-0"
-                accept="video/*"
-                multiple={false}
-              />
-            </label>
-          ) : (
-            <div className="relative h-full mt-3">
-              <VideoPlayer
-                src={URL.createObjectURL(watchVideo)}
-                className="object-cover w-full h-64 rounded-md"
-              />
-              <button
-                type="button"
-                className="absolute bottom-3 left-3 p-2 rounded-full opacity-75 bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
-                onClick={() => {
-                  setWatchVideo(null);
-                }}
-              >
-                <IoTrashBinOutline className="text-white" />
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
           <button
             type="button"
             className="bg-backgroundColor-mainColor hover:opacity-75 w-full text-white font-semibold p-1 mt-5 rounded-md outline-none"
             onClick={isLoading ? null : startWatchParty}
           >
-            {isLoading ? <WatchPartyLoader /> : "Start the watch party"}
+            {isLoading ? <WatchPartyLoader /> : "Continue"}
           </button>
         </div>
       )}

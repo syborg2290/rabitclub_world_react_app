@@ -54,23 +54,36 @@ const UtilityBox = () => {
           authModalContext.setShow("login");
         }
       } else {
-        gun
-          .get("watch_parties")
-          .get("live")
-          .get(user.userId)
-          .not((key) => {
-            if (key) {
-              if (user.user) {
-                navigate("/watch-party/");
-              } else {
-                previousActionContext.setPreviousAction({
-                  path: "/watch-party",
-                  values: {},
-                });
-                authModalContext.setShow("login");
-              }
-            }
-          });
+        navigate("/watch-party/", {
+          state: {
+            latitude: currentLat,
+            longitude: currentLng,
+          },
+        });
+        // gun
+        //   .get("watch_parties")
+        //   .map()
+        //   .once((data, key) => {
+        //     if (data.status !== "live" && data.createdBy !== user.userId) {
+        //       if (user.user) {
+        //         navigate("/watch-party/", {
+        //           state: {
+        //             latitude: currentLat,
+        //             longitude: currentLng,
+        //           },
+        //         });
+        //       } else {
+        //         previousActionContext.setPreviousAction({
+        //           path: "/watch-party",
+        //           values: {
+        //             latitude: currentLat,
+        //             longitude: currentLng,
+        //           },
+        //         });
+        //         authModalContext.setShow("login");
+        //       }
+        //     }
+        //   });
       }
     } catch (error) {
       console.debug(error);
@@ -144,7 +157,7 @@ const UtilityBox = () => {
         <div className="mt-5">
           <button
             type="button"
-            onClick={createWatchParty()}
+            onClick={createWatchParty}
             className="border border-white text-white p-1 rounded-md w-full outline-none hover:opacity-75"
           >
             <div className="flex justify-center align-middle">

@@ -25,7 +25,10 @@ module.exports = {
       },
       animation: {
         "spin-slow": "spin 3s linear infinite",
+        "spin-slow-2": "spin 15s linear infinite",
         "bounce-slow": "bounce 6s linear infinite",
+        "bounce-slow-2": "bounce 15s linear infinite",
+        "ping-slow": "ping 15s linear infinite",
       },
     },
   },
