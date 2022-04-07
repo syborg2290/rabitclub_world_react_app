@@ -7,13 +7,15 @@ import UtilityBox from "../components/UtilityBox";
 import { gun } from "../config";
 import PinMarker from "../components/PinMarker";
 import WatchPartyMarker from "../components/WatchPartyMarker";
-import Empty from "../components/common/Empty";
 import PlaneLoader from "../components/common/loaders/PlaneLoader";
+import LocationPermissionFailed from "../components/common/LocationPermissionFailed";
+import { IoAppsOutline } from "react-icons/io5";
 
 const HomePage = () => {
   const modalContext = useContext(NewPinModalContext);
   const [isLoading, setIsLoading] = useState(true);
   const [blockLocation, setBlockLocation] = useState(false);
+  const [utilityBoxShow, setUtilityBoxShow] = useState(true);
   const [allPins, setAllPins] = useState([]);
   const [allWatchParties, setAllWatchParties] = useState([]);
   const [zoom, setZoom] = useState(0);
@@ -109,8 +111,8 @@ const HomePage = () => {
         </div>
       ) : blockLocation ? (
         <>
-          <Empty
-            text="Sorry, you have to allow current location permission!"
+          <LocationPermissionFailed
+            text="Sorry, you have to allow your current location permission!"
             opacity="opacity-50 "
             extraClasses="mt-10"
           />
@@ -170,7 +172,17 @@ const HomePage = () => {
               })}
             </Map>
           )}
-          {modalContext.viewport && <UtilityBox />}
+          {!utilityBoxShow && (
+            <div
+              className="bg-dark rounded-full p-2 hover:opacity-70 absolute z-1 top-10 right-0 mr-2"
+              onClick={() => setUtilityBoxShow(true)}
+            >
+              <IoAppsOutline className="w-8 h-8 text-white" />
+            </div>
+          )}
+          {utilityBoxShow && modalContext.viewport && (
+            <UtilityBox setShow={setUtilityBoxShow} show={utilityBoxShow} />
+          )}
         </>
       )}
     </div>

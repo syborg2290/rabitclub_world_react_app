@@ -41,7 +41,7 @@ const VideoPlayer = (props) => {
       {props.videoRef.current !== null && (
         <div
           onClick={playOrPause}
-          className="absolute w-10 h-10 top-1/2 left-0 right-0 m-auto cursor-pointer"
+          className="absolute w-10 h-10 top-0 bottom-0 left-0 right-0 m-auto cursor-pointer"
         >
           {!props.videoRef?.current.paused ? (
             <IoPauseOutline

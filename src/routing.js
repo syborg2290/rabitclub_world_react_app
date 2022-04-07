@@ -12,10 +12,13 @@ import PinPage from "./pages/PinPage";
 import WatchPartyPage from "./pages/WatchPartyPage";
 import WatchPartyControlPage from "./pages/WatchPartyControlPage";
 import { setOnlineService } from "./services/user";
+import AlertModalContext from "./context/AlertContext";
+import AlertBox from "./components/common/AlertBox";
 
 function Routing() {
   const location = useLocation();
   const user = useContext(UserContext);
+  const alertContext = useContext(AlertModalContext);
 
   const changeStatusUser = async (status) => {
     await setOnlineService(status);
@@ -31,6 +34,13 @@ function Routing() {
         {!user.userLoading ? (
           <>
             <Header />
+            {alertContext.showAlertModal && (
+              <AlertBox
+                show={alertContext.showAlertModal}
+                setShow={alertContext.setShowAlertModal}
+                alertText={alertContext.alertText}
+              />
+            )}
             <Routes location={location}>
               <Route exact path="/" element={<HomePage />} />
               <Route

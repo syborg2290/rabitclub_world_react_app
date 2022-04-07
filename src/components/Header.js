@@ -24,6 +24,7 @@ const Header = () => {
   const [userDropdownVisibilityClass, setUserDropdownVisibilityClass] =
     useState("hidden");
   const [searchText, setSearchText] = useState("");
+  // eslint-disable-next-line
   const [searchType, setSearchType] = useState("Pin");
   const authModalContext = useContext(AuthModalContext);
   const user = useContext(UserContext);

@@ -14,6 +14,7 @@ import WatchPartyLoader from "../components/common/loaders/WatchPartyLoader";
 import Textarea from "../components/common/Textarea";
 import VideoPlayer from "../components/common/VideoPlayer";
 import { watchPartyCategories } from "../utils/categories";
+import { getCurrentDateService } from "../services/utils";
 
 const WatchPartyPage = (props) => {
   const navigate = useNavigate();

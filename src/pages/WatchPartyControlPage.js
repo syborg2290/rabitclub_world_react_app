@@ -2,31 +2,48 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import InitialLoader from "../components/common/loaders/InitialLoader";
 import { gun } from "../config";
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import VideoPlayer from "../components/common/VideoPlayer";
 import {
   IoAdd,
   IoChevronBackOutline,
   IoChevronForwardOutline,
+  IoTrashBinOutline,
 } from "react-icons/io5";
 import { getCurrentDateService } from "../services/utils";
+import {
+  getVideoChunkAccTimestamp,
+  watchPartyVideoUpload,
+} from "../services/flask_server";
+import UploadingLoader from "../components/common/loaders/UploadingLoader";
 
 const WatchPartyControlPage = () => {
   const scrollbar = useRef(null);
-  const ffmpeg = createFFmpeg({
-    log: true,
-  });
   const location = useLocation();
   const [isLoading, setSetIsLoading] = useState(true);
+  const [isUploadingVideo, setSetIsUploadingVideo] = useState(false);
+  const [isStartedWatchParty, setSetIsStartedWatchParty] = useState(false);
   const [videoFiles, setVideoFiles] = useState([]);
   const [currentVideo, setCurrentVideo] = useState(null);
   const videoRef = useRef(null);
 
   useEffect(() => {
     setVideoFiles(location.state.videos);
-    setCurrentVideo(location.state.videos[0]);
+    uploadVideoToServer(location.state.videos[0], location.state.watchpartyId);
+    setCurrentVideo({ index: 0, file: location.state.videos[0] });
     setSetIsLoading(false);
   }, [location.state.videos]);
+
+  const uploadVideoToServer = async (file, id) => {
+    try {
+      setSetIsUploadingVideo(true);
+      const res = await watchPartyVideoUpload(file, id);
+      if (res === "done") {
+        setSetIsUploadingVideo(false);
+      }
+    } catch (error) {
+      console.debug(error);
+    }
+  };
 
   const getCurrentServerDate = async () => {
     const dateRes = await getCurrentDateService();
@@ -34,11 +51,7 @@ const WatchPartyControlPage = () => {
 
   const createWatchParty = async () => {
     gun.get("watch_parties").set(location.state.watchpartyObj);
-
-    // gun
-    //   .get("watch_party_segments")
-    //   .get(location.state.watchpartyId)
-    //   .put({lastUpdate:,data:chunks[i]});
+    setSetIsStartedWatchParty(true);
   };
 
   const selectVideos = (e) => {
@@ -53,8 +66,28 @@ const WatchPartyControlPage = () => {
   };
 
   const streamingVideo = async (timestamp) => {
-    console.log(timestamp);
-    ffmpeg.FS("writeFile", "test.avi", await fetchFile("/flame.avi"));
+    try {
+      const currentTimestamp = timestamp;
+      var seconds = ((currentTimestamp % 60000) / 1000).toFixed(0);
+
+      const startTime = seconds;
+      const endTime = seconds + 20;
+      const res = await getVideoChunkAccTimestamp(
+        location.state.watchpartyId,
+        startTime,
+        endTime
+      );
+      if (res) {
+        console.log(res);
+      }
+    } catch (error) {
+      console.debug(error);
+    }
+
+    // gun
+    //   .get("watch_party_segments")
+    //   .get(location.state.watchpartyId)
+    //   .put({lastUpdate:,isLoading:isUploadingVideo,isPause,data:data:chunks[i]});
   };
 
   const endWatchParty = () => {
@@ -73,7 +106,11 @@ const WatchPartyControlPage = () => {
   };
 
   return (
-    <div className="px-5 pt-5 pb-16 bg-dark mx-5 my-5 rounded-md">
+    <div
+      className={`px-5 pt-5 bg-dark mx-5 my-5 rounded-md ${
+        videoFiles.length > 1 ? "pb-16" : "pb-0"
+      }`}
+    >
       {isLoading ? (
         <div className="mx-auto self-center text-center my-20">
           <InitialLoader />
@@ -81,20 +118,31 @@ const WatchPartyControlPage = () => {
       ) : (
         <div className="flex">
           <div className="w-2/3 h-screen">
-            <span className="text-white font-bold text-md my-1 flex justify-center align-middle">
-              {currentVideo.name}
+            <span className="text-white font-bold text-sm my-1 flex justify-center align-middle">
+              {currentVideo.file.name}
             </span>
-            <div className="relative">
-              <video
-                src={URL.createObjectURL(currentVideo)}
-                autoPlay={true}
-                className="w-full h-96 rounded-md"
-                disablePictureInPicture={true}
-                // onTimeUpdate={async (e) => {
-                //   await streamingVideo(e.timeStamp);
-                // }}
-              />
-            </div>
+            {isUploadingVideo ? (
+              <div className="w-full h-96 object-cover top-0 bottom-0 left-0 right-0 m-auto">
+                <UploadingLoader text="Processing..." />
+              </div>
+            ) : (
+              <div className="relative rounded-md">
+                <video
+                  src={URL.createObjectURL(currentVideo.file)}
+                  controls={true}
+                  autoPlay={true}
+                  className="object-cover w-full h-96 rounded-md"
+                  disablePictureInPicture={true}
+                  onTimeUpdate={
+                    isStartedWatchParty
+                      ? () => null
+                      : (e) => {
+                          streamingVideo(e.timeStamp);
+                        }
+                  }
+                />
+              </div>
+            )}
             <div className="flex">
               {videoFiles.length > 2 && (
                 <IoChevronBackOutline
@@ -107,26 +155,50 @@ const WatchPartyControlPage = () => {
               )}
               {videoFiles.length >= 2 && (
                 <div
-                  className="mt-3 flex overflow-x-scroll overflow-y-hidden w-full justify-center self-center cursor-pointer"
+                  className={`mt-3 flex overflow-x-scroll overflow-y-hidden w-full cursor-pointer ${
+                    videoFiles.length >= 2 ? "" : "justify-center self-center"
+                  }`}
                   style={{
                     scrollbarWidth: "none",
                   }}
                   ref={scrollbar}
                 >
                   {videoFiles.map((each, index) => {
-                    return (
-                      <div
-                        className="relative ml-2 mr-2"
-                        key={index}
-                        onClick={() => setCurrentVideo(each)}
-                      >
-                        <VideoPlayer
-                          src={URL.createObjectURL(each)}
-                          className="object-cover w-44 h-44 rounded-md self-center"
-                          videoRef={videoRef}
-                        />
-                      </div>
-                    );
+                    if (index === currentVideo.index) {
+                      // eslint-disable-next-line
+                      return;
+                    } else {
+                      return (
+                        <div
+                          className="relative ml-2 mr-2 w-36 h-36 max-w-xs"
+                          key={index}
+                        >
+                          <div
+                            onClick={() =>
+                              setCurrentVideo({ index: index, file: each })
+                            }
+                          >
+                            <VideoPlayer
+                              src={URL.createObjectURL(each)}
+                              className="object-cover w-36 h-36 max-w-xs rounded-md self-center"
+                              videoRef={videoRef}
+                            />
+                          </div>
+                          {!isStartedWatchParty && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                videoFiles.splice(index, 1);
+                                setVideoFiles([...videoFiles]);
+                              }}
+                              className="absolute bottom-3 left-3 p-2 rounded-full opacity-75 bg-dark text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
+                            >
+                              <IoTrashBinOutline className="text-white" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    }
                   })}
                 </div>
               )}
@@ -140,7 +212,7 @@ const WatchPartyControlPage = () => {
                 />
               )}
             </div>
-            {videoFiles.length >= 1 && (
+            {!isStartedWatchParty && videoFiles.length >= 1 && (
               <div className="flex justify-center align-middle my-5">
                 <label className="cursor-pointer text-white font-bold self-center">
                   <div className="bg-backgroundColor-mainColor rounded-md p-1 hover:opacity-95 w-8 h-8">

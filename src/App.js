@@ -14,10 +14,13 @@ import UserContext from "./context/UserContext";
 import Routing from "./routing";
 import NewPinModalContext from "./context/NewPinModalContext";
 import PreviousActionContext from "./context/PreviousActionContext";
+import AlertModalContext from "./context/AlertContext";
 
 function App() {
   const MINUTE_MS = 60000;
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertText, setAlertText] = useState("");
   // const [showNewPinModal, setShowNewPinModal] = useState(false);
   const [previousAction, setPreviousAction] = useState({});
   const [viewport, setViewport] = useState({});
@@ -97,11 +100,20 @@ function App() {
               previousAction,
             }}
           >
-            <BrowserRouter>
-              <Routing />
-              <AuthModal />
-              {/* <NewPinModal /> */}
-            </BrowserRouter>
+            <AlertModalContext.Provider
+              value={{
+                setShowAlertModal,
+                showAlertModal,
+                setAlertText,
+                alertText,
+              }}
+            >
+              <BrowserRouter>
+                <Routing />
+                <AuthModal />
+                {/* <NewPinModal /> */}
+              </BrowserRouter>
+            </AlertModalContext.Provider>
           </PreviousActionContext.Provider>
         </UserContext.Provider>
       </NewPinModalContext.Provider>

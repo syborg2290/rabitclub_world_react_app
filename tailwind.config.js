@@ -29,6 +29,7 @@ module.exports = {
         "bounce-slow": "bounce 6s linear infinite",
         "bounce-slow-2": "bounce 15s linear infinite",
         "ping-slow": "ping 15s linear infinite",
+        "pulse-slow": "pulse 6s linear infinite",
       },
     },
   },
