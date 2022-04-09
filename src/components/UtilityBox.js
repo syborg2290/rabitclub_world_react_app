@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IoCloseCircleOutline, IoFilmOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { gun } from "../config";
-import AlertModalContext from "../context/AlertContext";
 import AuthModalContext from "../context/AuthModalContext";
 import NewPinModalContext from "../context/NewPinModalContext";
 import PreviousActionContext from "../context/PreviousActionContext";
@@ -15,13 +13,11 @@ const UtilityBox = (props) => {
   const previousActionContext = useContext(PreviousActionContext);
   const authModalContext = useContext(AuthModalContext);
   const user = useContext(UserContext);
-  const alertContext = useContext(AlertModalContext);
+  // const alertContext = useContext(AlertModalContext);
   const [currentLat, setLatitude] = useState(0);
   const [currentLng, setLongitude] = useState(0);
-  const [isWatchPartiesEmpty, setIsWatchPartiesEmpty] = useState(true);
 
   useEffect(() => {
-    checkIsWatchPartiesExist();
     setLatitude(modalContext?.coordinates?.latitude);
     setLongitude(modalContext?.coordinates?.longitude);
 
@@ -31,84 +27,79 @@ const UtilityBox = (props) => {
     modalContext?.coordinates?.longitude,
   ]);
 
-  const checkIsWatchPartiesExist = () => {
-    gun
-      .get("watch_parties")
-      .map()
-      .once((data, key) => {
-        if (data) {
-          setIsWatchPartiesEmpty(false);
-          return;
-        }
-      });
-  };
+  // const checkIsWatchPartiesExist = () => {
+  //   gun
+  //     .get("watch_parties")
+  //     .map()
+  //     .once((data, key) => {
+  //       if (data) {
+  //         setIsWatchPartiesEmpty(false);
+  //         return;
+  //       }
+  //     });
+  // };
 
-  const createWatchParty = () => {
-    try {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          if (isWatchPartiesEmpty) {
-            if (user.user) {
-              navigate("/watch-party/", {
-                state: {
-                  latitude: position?.coords?.latitude,
-                  longitude: position?.coords?.longitude,
-                },
-              });
-            } else {
-              previousActionContext.setPreviousAction({
-                path: "/watch-party",
-                values: {
-                  latitude: position?.coords?.latitude,
-                  longitude: position?.coords?.longitude,
-                },
-              });
-              authModalContext.setShow("login");
-            }
-          } else {
-            navigate("/watch-party/", {
-              state: {
-                latitude: position?.coords?.latitude,
-                longitude: position?.coords?.longitude,
-              },
-            });
-            // gun
-            //   .get("watch_parties")
-            //   .map()
-            //   .once((data, key) => {
-            //     if (data.status !== "live" && data.createdBy !== user.userId) {
-            //       if (user.user) {
-            //         navigate("/watch-party/", {
-            //           state: {
-            //             latitude: currentLat,
-            //             longitude: currentLng,
-            //           },
-            //         });
-            //       } else {
-            //         previousActionContext.setPreviousAction({
-            //           path: "/watch-party",
-            //           values: {
-            //             latitude: currentLat,
-            //             longitude: currentLng,
-            //           },
-            //         });
-            //         authModalContext.setShow("login");
-            //       }
-            //     }
-            //   });
-          }
-        },
-        function (error) {
-          alertContext.setAlertText(
-            "Sorry, you have to allow your current location permission!"
-          );
-          alertContext.setShowAlertModal(true);
-        }
-      );
-    } catch (error) {
-      console.debug(error);
-    }
-  };
+  // const createWatchParty = () => {
+  //   try {
+  //     navigator.geolocation.getCurrentPosition(
+  //       function (position) {
+  //         if (isWatchPartiesEmpty) {
+  //           if (user.user) {
+  //             navigate("/watch-party/", {
+  //               state: {
+  //                 latitude: position?.coords?.latitude,
+  //                 longitude: position?.coords?.longitude,
+  //               },
+  //             });
+  //           } else {
+  //             previousActionContext.setPreviousAction({
+  //               path: "/watch-party",
+  //               values: {
+  //                 latitude: position?.coords?.latitude,
+  //                 longitude: position?.coords?.longitude,
+  //               },
+  //             });
+  //             authModalContext.setShow("login");
+  //           }
+  //         } else {
+
+  //           gun
+  //             .get("watch_parties")
+  //             .map()
+  //             .once((data, key) => {
+  //               if (data.status !== "live" && data.createdBy !== user.userId) {
+  //                 if (user.user) {
+  //                   navigate("/watch-party/", {
+  //                     state: {
+  //                       latitude: currentLat,
+  //                       longitude: currentLng,
+  //                     },
+  //                   });
+  //                 } else {
+  //                   previousActionContext.setPreviousAction({
+  //                     path: "/watch-party",
+  //                     values: {
+  //                       latitude: currentLat,
+  //                       longitude: currentLng,
+  //                     },
+  //                   });
+  //                   authModalContext.setShow("login");
+  //                 }
+  //               }
+  //             });
+  //         }
+  //       },
+  //       function (error) {
+  //         alertContext.setAlertText(
+  //           "Sorry, you have to allow your current location permission!"
+  //         );
+  //         alertContext.setShowAlertModal(true);
+  //       }
+  //     );
+  //   } catch (error) {
+  //     console.debug(error);
+  //   }
+  // };
 
   return (
     <div className="bg-dark mx-4 absolute z-1 top-10 right-0 w-2/7 h-3/4 rounded-md">
@@ -183,12 +174,11 @@ const UtilityBox = (props) => {
         <div className="mt-5">
           <button
             type="button"
-            onClick={createWatchParty}
             className="border border-white text-white p-1 rounded-md w-full outline-none hover:opacity-75"
           >
             <div className="flex justify-center align-middle">
               <IoFilmOutline className="text-white w-5 h-5 mr-2 self-center" />
-              Create A WatchParty
+              Create Video Space
             </div>
           </button>
         </div>

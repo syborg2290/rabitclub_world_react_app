@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   IoPauseOutline,
   IoVolumeHighOutline,
@@ -8,15 +8,20 @@ import {
 const VideoPlayer = (props) => {
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isMute, setIsMute] = useState(false);
+  const videoRef = useRef(null);
   // const [isPlaying, setIsPlaying] = useState(false);
 
+  useEffect(() => {
+    videoRef.current.pause();
+  }, [props.src]);
+
   const playOrPause = useCallback(() => {
-    if (props.videoRef?.current.paused || props.videoRef?.current.ended) {
-      props.videoRef?.current.play();
+    if (videoRef.current.paused || videoRef.current.ended) {
+      videoRef.current.play();
     } else {
-      props.videoRef?.current.pause();
+      videoRef.current.pause();
     }
-  }, [props.videoRef]);
+  }, [videoRef]);
 
   // const onPlay = useCallback(() => {
   //   setIsPlaying(true);
@@ -34,19 +39,19 @@ const VideoPlayer = (props) => {
         // onPlay={onPlay}
         // onPause={onPause}
         muted={isMute}
-        ref={props.videoRef}
+        ref={videoRef}
         src={props.src}
         className={props.className}
       />
-      {props.videoRef.current !== null && (
+      {videoRef.current !== null && (
         <div
           onClick={playOrPause}
           className="absolute w-10 h-10 top-0 bottom-0 left-0 right-0 m-auto cursor-pointer"
         >
-          {!props.videoRef?.current.paused ? (
+          {!videoRef.current.paused ? (
             <IoPauseOutline
               className={`text-white ${
-                !props.videoRef?.current.paused
+                !videoRef.current.paused
                   ? isMouseOver
                     ? "opacity-100 w-10 h-10 bg-black rounded-full p-1"
                     : "opacity-0"
@@ -58,7 +63,7 @@ const VideoPlayer = (props) => {
               src={require("../../assets/images/play.png")}
               alt=""
               className={`${
-                !props.videoRef?.current.paused
+                !videoRef.current.paused
                   ? isMouseOver
                     ? "opacity-100 w-10 h-10"
                     : "opacity-0"

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ImgLoader from "./common/loaders/ImgLoader";
 import VideoPlayer from "./common/VideoPlayer";
 import LazyLoadingImage from "./LazyLoadingImage";
@@ -8,7 +8,6 @@ const PinPost = (props) => {
   const [displayMedia, setDisplayMedia] = useState(null);
   // eslint-disable-next-line
   const [mediaList, setMediaList] = useState([]);
-  const videoRef = useRef(null);
 
   useEffect(() => {
     var arrayOfMedia = props?.post.urlsList.split(",");
@@ -56,7 +55,6 @@ const PinPost = (props) => {
             <VideoPlayer
               src={displayMedia.media.url}
               className="object-cover w-60 h-64 rounded-md"
-              videoRef={videoRef}
             />
           )}
           {mediaList.length > 1 && (

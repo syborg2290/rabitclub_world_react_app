@@ -6,7 +6,6 @@ import NewPinModalContext from "../context/NewPinModalContext";
 import UtilityBox from "../components/UtilityBox";
 import { gun } from "../config";
 import PinMarker from "../components/PinMarker";
-import WatchPartyMarker from "../components/WatchPartyMarker";
 import PlaneLoader from "../components/common/loaders/PlaneLoader";
 import LocationPermissionFailed from "../components/common/LocationPermissionFailed";
 import { IoAppsOutline } from "react-icons/io5";
@@ -17,12 +16,10 @@ const HomePage = () => {
   const [blockLocation, setBlockLocation] = useState(false);
   const [utilityBoxShow, setUtilityBoxShow] = useState(true);
   const [allPins, setAllPins] = useState([]);
-  const [allWatchParties, setAllWatchParties] = useState([]);
   const [zoom, setZoom] = useState(0);
 
   useEffect(() => {
     getAllPins();
-    getAllWatchParties();
     getCurrentPosition();
     // eslint-disable-next-line
   }, []);
@@ -46,28 +43,28 @@ const HomePage = () => {
     }
   };
 
-  const getAllWatchParties = () => {
-    try {
-      gun
-        .get("watch_parties")
-        .map()
-        .on((data, key) => {
-          if (data.status === "live") {
-            if (
-              allWatchParties.filter((e) => e.data._id === data._id).length <= 0
-            ) {
-              allWatchParties.push({
-                key: key,
-                data: data,
-              });
-              setAllWatchParties([...allWatchParties]);
-            }
-          }
-        });
-    } catch (error) {
-      console.debug(error);
-    }
-  };
+  // const getAllWatchParties = () => {
+  //   try {
+  //     gun
+  //       .get("watch_parties")
+  //       .map()
+  //       .on((data, key) => {
+
+  //           if (
+  //             allWatchParties.filter((e) => e.data._id === data._id).length <= 0 && data!==null
+  //           ) {
+  //             allWatchParties.push({
+  //               key: key,
+  //               data: data,
+  //             });
+  //             setAllWatchParties([...allWatchParties]);
+  //           }
+
+  //       });
+  //   } catch (error) {
+  //     console.debug(error);
+  //   }
+  // };
 
   const getCurrentPosition = () => {
     try {
@@ -154,16 +151,6 @@ const HomePage = () => {
                     key={each.data._id}
                     category={each.data.category}
                     pinData={each.data}
-                    latitude={each.data.latitude}
-                    longitude={each.data.longitude}
-                    zoom={zoom}
-                  />
-                );
-              })}
-              {allWatchParties.map((each) => {
-                return (
-                  <WatchPartyMarker
-                    key={each.data._id}
                     latitude={each.data.latitude}
                     longitude={each.data.longitude}
                     zoom={zoom}

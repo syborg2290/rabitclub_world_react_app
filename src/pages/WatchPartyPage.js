@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   IoAdd,
   IoChevronBackOutline,
@@ -26,7 +26,6 @@ const WatchPartyPage = (props) => {
   const [errorText, setErrorText] = useState("");
   const [watchVideoList, setWatchVideoList] = useState([]);
   const [displayVideo, setDisplayVideo] = useState(null);
-  const videoRef = useRef(null);
 
   const selectVideos = (e) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -39,18 +38,6 @@ const WatchPartyPage = (props) => {
       }
     }
   };
-
-  // function getVideoDuration(file) {
-  //   let video = document.createElement("video");
-  //   video.preload = "metadata";
-
-  //   video.onloadedmetadata = function () {
-  //     window.URL.revokeObjectURL(video.src);
-  //     setVideoDuration(video.duration);
-  //   };
-
-  //   video.src = URL.createObjectURL(file);
-  // }
 
   const startWatchParty = async () => {
     try {
@@ -197,8 +184,6 @@ const WatchPartyPage = (props) => {
                       onClick={(e) => {
                         e.preventDefault();
                         if (displayVideo.index > 0) {
-                          videoRef.current.pause();
-
                           setDisplayVideo({
                             index: displayVideo.index - 1,
                             file: watchVideoList[displayVideo.index - 1],
@@ -211,7 +196,6 @@ const WatchPartyPage = (props) => {
                     <VideoPlayer
                       src={URL.createObjectURL(displayVideo.file)}
                       className="object-cover w-full h-64 rounded-md"
-                      videoRef={videoRef}
                     />
 
                     <div className="bg-black rounded-full px-2 py-1 absolute left-3 top-1 text-white">
@@ -247,7 +231,6 @@ const WatchPartyPage = (props) => {
                       onClick={(e) => {
                         e.preventDefault();
                         if (watchVideoList.length > displayVideo.index + 1) {
-                          videoRef.current.pause();
                           setDisplayVideo({
                             index: displayVideo.index + 1,
                             file: watchVideoList[displayVideo.index + 1],

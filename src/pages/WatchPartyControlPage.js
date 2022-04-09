@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import InitialLoader from "../components/common/loaders/InitialLoader";
 import { gun } from "../config";
@@ -10,48 +10,32 @@ import {
   IoTrashBinOutline,
 } from "react-icons/io5";
 import { getCurrentDateService } from "../services/utils";
-import {
-  getVideoChunkAccTimestamp,
-  watchPartyVideoUpload,
-} from "../services/flask_server";
-import UploadingLoader from "../components/common/loaders/UploadingLoader";
+import WatchPartyLoader from "../components/common/loaders/WatchPartyLoader";
 
 const WatchPartyControlPage = () => {
   const scrollbar = useRef(null);
+  const currentVideoPlay = useRef(null);
   const location = useLocation();
   const [isLoading, setSetIsLoading] = useState(true);
-  const [isUploadingVideo, setSetIsUploadingVideo] = useState(false);
   const [isStartedWatchParty, setSetIsStartedWatchParty] = useState(false);
+  const [watchpartyLoading, setSetWatchpartyLoading] = useState(false);
+  const [isVideoPause, setIsVideoPause] = useState(false);
   const [videoFiles, setVideoFiles] = useState([]);
   const [currentVideo, setCurrentVideo] = useState(null);
-  const videoRef = useRef(null);
 
   useEffect(() => {
     setVideoFiles(location.state.videos);
-    uploadVideoToServer(location.state.videos[0], location.state.watchpartyId);
     setCurrentVideo({ index: 0, file: location.state.videos[0] });
     setSetIsLoading(false);
   }, [location.state.videos]);
 
-  const uploadVideoToServer = async (file, id) => {
-    try {
-      setSetIsUploadingVideo(true);
-      const res = await watchPartyVideoUpload(file, id);
-      if (res === "done") {
-        setSetIsUploadingVideo(false);
-      }
-    } catch (error) {
-      console.debug(error);
-    }
-  };
-
-  const getCurrentServerDate = async () => {
-    const dateRes = await getCurrentDateService();
-  };
-
   const createWatchParty = async () => {
+    setSetWatchpartyLoading(true);
     gun.get("watch_parties").set(location.state.watchpartyObj);
+    currentVideoPlay.current.load();
+    currentVideoPlay.current.play();
     setSetIsStartedWatchParty(true);
+    setSetWatchpartyLoading(false);
   };
 
   const selectVideos = (e) => {
@@ -65,45 +49,54 @@ const WatchPartyControlPage = () => {
     }
   };
 
-  const streamingVideo = async (timestamp) => {
+  const streamingVideo = async () => {
     try {
-      const currentTimestamp = timestamp;
-      var seconds = ((currentTimestamp % 60000) / 1000).toFixed(0);
+      const currentVideoSize = currentVideo.file.size;
+      const sizePerSecond =
+        currentVideoSize / currentVideoPlay.current.duration;
 
-      const startTime = seconds;
-      const endTime = seconds + 20;
-      const res = await getVideoChunkAccTimestamp(
-        location.state.watchpartyId,
-        startTime,
-        endTime
-      );
-      if (res) {
-        console.log(res);
-      }
+      const currentSeconds = currentVideoPlay.current.currentTime;
+
+      const start = sizePerSecond * currentSeconds;
+      const end = sizePerSecond * (currentSeconds + 1);
+
+      const reader = new FileReader();
+      const chunk = currentVideo.file.slice(start, end, "video/mp4");
+      reader.readAsDataURL(chunk);
+      reader.onload = async (e) => {
+        const dateRes = await getCurrentDateService();
+        if (dateRes) {
+          setTimeout(function () {
+            gun
+              .get("watch_party_segments")
+              .get(location.state.watchpartyId)
+              .put({
+                lastUpdate: new Date(dateRes).toDateString(),
+                isPause: isVideoPause,
+                dataBs4: isVideoPause ? null : e.target.result.toString(),
+              });
+          }, 1000);
+        }
+      };
     } catch (error) {
       console.debug(error);
     }
-
-    // gun
-    //   .get("watch_party_segments")
-    //   .get(location.state.watchpartyId)
-    //   .put({lastUpdate:,isLoading:isUploadingVideo,isPause,data:data:chunks[i]});
   };
 
-  const endWatchParty = () => {
-    gun
-      .get("watch_parties")
-      .map()
-      .once((data, key) => {
-        console.log(key);
-        if (
-          data.status === "live" &&
-          data.createdBy === location.state.userId
-        ) {
-          gun.get(key).put({ status: "end" });
-        }
-      });
+  const endWatchParty = async () => {
+    setSetWatchpartyLoading(true);
+
+    setSetIsStartedWatchParty(false);
+
+    gun.get("watch_parties").get(location.state.watchpartyId).put(null);
+    gun.get("watch_party_segments").get(location.state.watchpartyId).put(null);
+
+    setSetWatchpartyLoading(false);
   };
+
+  const onPlay = useCallback(() => setIsVideoPause(false), []);
+
+  const onPause = useCallback(() => setIsVideoPause(true), []);
 
   return (
     <div
@@ -114,35 +107,41 @@ const WatchPartyControlPage = () => {
       {isLoading ? (
         <div className="mx-auto self-center text-center my-20">
           <InitialLoader />
+          <span className="text-white text-4xl justify-center opacity-50">
+            Processing...
+          </span>
+          <div className="text-textColor-lightGray text-md justify-center mt-10 opacity-90">
+            Please wait a moment, this will take some time.
+          </div>
         </div>
       ) : (
         <div className="flex">
           <div className="w-2/3 h-screen">
             <span className="text-white font-bold text-sm my-1 flex justify-center align-middle">
-              {currentVideo.file.name}
+              {currentVideo.file.name.replace(/\.[^/.]+$/, "")}
             </span>
-            {isUploadingVideo ? (
-              <div className="w-full h-96 object-cover top-0 bottom-0 left-0 right-0 m-auto">
-                <UploadingLoader text="Processing..." />
-              </div>
-            ) : (
+            {
               <div className="relative rounded-md">
                 <video
                   src={URL.createObjectURL(currentVideo.file)}
                   controls={true}
-                  autoPlay={true}
+                  // autoPlay={true}
+                  loop={true}
                   className="object-cover w-full h-96 rounded-md"
                   disablePictureInPicture={true}
+                  ref={currentVideoPlay}
+                  onPause={isStartedWatchParty ? onPause : null}
+                  onPlay={isStartedWatchParty ? onPlay : null}
                   onTimeUpdate={
-                    isStartedWatchParty
+                    !isStartedWatchParty
                       ? () => null
                       : (e) => {
-                          streamingVideo(e.timeStamp);
+                          streamingVideo();
                         }
                   }
                 />
               </div>
-            )}
+            }
             <div className="flex">
               {videoFiles.length > 2 && (
                 <IoChevronBackOutline
@@ -174,14 +173,20 @@ const WatchPartyControlPage = () => {
                           key={index}
                         >
                           <div
-                            onClick={() =>
-                              setCurrentVideo({ index: index, file: each })
+                            onClick={
+                              watchpartyLoading
+                                ? () => null
+                                : () => {
+                                    setCurrentVideo({
+                                      index: index,
+                                      file: each,
+                                    });
+                                  }
                             }
                           >
                             <VideoPlayer
                               src={URL.createObjectURL(each)}
                               className="object-cover w-36 h-36 max-w-xs rounded-md self-center"
-                              videoRef={videoRef}
                             />
                           </div>
                           {!isStartedWatchParty && (
@@ -235,9 +240,23 @@ const WatchPartyControlPage = () => {
               <button
                 type="button"
                 className="bg-backgroundColor-mainColor hover:opacity-75 w-2/3 text-white font-semibold p-2 rounded-md outline-none"
-                onClick={createWatchParty}
+                onClick={
+                  watchpartyLoading
+                    ? () => null
+                    : () => {
+                        !isStartedWatchParty
+                          ? createWatchParty()
+                          : endWatchParty();
+                      }
+                }
               >
-                {"Start the Watch party"}
+                {watchpartyLoading ? (
+                  <WatchPartyLoader />
+                ) : !isStartedWatchParty ? (
+                  "Start the Watch party"
+                ) : (
+                  "End the watch party"
+                )}
               </button>
             </div>
           </div>

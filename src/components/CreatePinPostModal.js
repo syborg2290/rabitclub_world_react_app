@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   IoAdd,
   IoChevronBackOutline,
@@ -23,7 +23,6 @@ const CreatePinPostModal = (props) => {
   const [description, setDescription] = useState("");
   const [errorText, setErrorText] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
-  const videoRef = useRef(null);
 
   useEffect(() => {
     setDisplayMedia({ index: 0, media: props?.mediaList[0] });
@@ -133,7 +132,6 @@ const CreatePinPostModal = (props) => {
                 onClick={(e) => {
                   e.preventDefault();
                   if (displayMedia.index > 0) {
-                    videoRef.current.pause();
                     setDisplayMedia({
                       index: displayMedia.index - 1,
                       media: props?.mediaList[displayMedia.index - 1],
@@ -154,7 +152,6 @@ const CreatePinPostModal = (props) => {
                   <VideoPlayer
                     src={displayMedia.media.fileUrl}
                     className="object-cover w-60 h-60 rounded-md"
-                    videoRef={videoRef}
                   />
                 )}
 
