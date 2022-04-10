@@ -209,6 +209,54 @@ export const updateCoverPicService = async (url) => {
   }
 };
 
+export const followingUserService = async (id) => {
+  try {
+    const data = { id };
+    const response = await axios.post(api_baseUrl + "followingUser", data, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const getAmIFollowingService = async (id) => {
+  try {
+    const response = await axios.get(api_baseUrl + "amIFollowing/" + id, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return {
+        status: true,
+        result: response.data["result"],
+      };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
 export const updateProfileService = async (
   email,
   bio,

@@ -7,6 +7,7 @@ import {
   HiOutlineBell,
   HiOutlineChat,
   HiOutlineChevronDown,
+  HiOutlineUsers,
 } from "react-icons/hi";
 import ClickOutHandler from "react-clickout-handler";
 import {
@@ -70,6 +71,9 @@ const Header = () => {
 
         {user.user && (
           <>
+            <button className="px-1 py-1">
+              <HiOutlineUsers className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
+            </button>
             <button className="px-1 py-1">
               <HiOutlineChat className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>

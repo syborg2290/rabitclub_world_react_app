@@ -11,7 +11,12 @@ import Cover from "../assets/images/cover.jpg";
 import Profile from "../assets/images/default.png";
 import Button from "../components/common/Button";
 import CropModal from "../components/CropModal";
-import { getUserFromIdService, updateCoverPicService } from "../services/user";
+import {
+  followingUserService,
+  getAmIFollowingService,
+  getUserFromIdService,
+  updateCoverPicService,
+} from "../services/user";
 import Spinner from "../components/common/loaders/Spinner";
 import EditProfileModal from "../components/EditProfileModal";
 import UserContext from "../context/UserContext";
@@ -19,6 +24,7 @@ import UploadingLoader from "../components/common/loaders/UploadingLoader";
 import LazyLoadingImage from "../components/LazyLoadingImage";
 import LongTextModal from "../components/LongTextModal";
 import { client } from "../config";
+import Bounce from "../components/common/loaders/Bounce";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
@@ -27,10 +33,12 @@ const ProfilePage = (props) => {
   const [coverImage, setCoverImage] = useState(null);
   const [image, setImage] = useState(null);
   const [isLoadingCover, setIsUploadingCoverLoading] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [cropModal, setCropModal] = useState(false);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const [viewDescModal, setViewDescModal] = useState(false);
+  const [amIFollower, setAmIFollower] = useState(false);
   const isLoggedUser = location?.state?.userId === props.user.userId;
 
   useEffect(() => {
@@ -40,6 +48,9 @@ const ProfilePage = (props) => {
       if (isLoggedUser) {
         let currentUser = currentUserInfo.userData;
         setUserData(currentUser);
+        if (!isLoggedUser) {
+          getAmIFollowing();
+        }
         if (currentUser?.cover_pic) {
           setCoverImage(currentUser?.cover_pic);
         }
@@ -58,6 +69,13 @@ const ProfilePage = (props) => {
       if (userDataRes?.cover_pic) {
         setCoverImage(userDataRes?.cover_pic);
       }
+    }
+  };
+
+  const getAmIFollowing = async () => {
+    const res = await getAmIFollowingService(location?.state?.userId);
+    if (res) {
+      setAmIFollower(res.result);
     }
   };
 
@@ -92,6 +110,21 @@ const ProfilePage = (props) => {
       }
     } else {
       setIsUploadingCoverLoading(true);
+    }
+  };
+
+  const followUser = async () => {
+    try {
+      setIsFollowLoading(true);
+      const res = await followingUserService(location?.state?.userId);
+      if (res.status) {
+        setUserData(res.result);
+        setIsFollowLoading(false);
+      } else {
+        setIsFollowLoading(false);
+      }
+    } catch (error) {
+      console.debug(error);
     }
   };
 
@@ -220,12 +253,12 @@ const ProfilePage = (props) => {
                   <div className="flex">
                     <button
                       type="button"
-                      className="absolute bottom-3 left-3 p-2 rounded-md bg-backgroundColor-mainColor 
+                      className="absolute bottom-3 left-3 rounded-md bg-backgroundColor-mainColor 
                        text-xl cursor-pointer outline-none hover:shadow-md transition-all duration-500 ease-in-out"
                       onClick={saveCoverImage}
                     >
-                      <div className="flex self-center mx-auto text-center">
-                        <IoSaveOutline className="text-white w-5 h-5 hover:opacity-70 mr-1" />
+                      <div className="top-0 left-0 right-0 bottom-0 m-auto p-2">
+                        <IoSaveOutline className="text-white w-5 h-5 hover:opacity-70" />
                       </div>
                     </button>
                   </div>
@@ -244,8 +277,17 @@ const ProfilePage = (props) => {
                 </div>
               </Button>
             ) : (
-              <Button className="h-8 text-textColor-lightGray border border-gray-300 hover:border-white hover:border-2">
-                <div className="flex">Follow</div>
+              <Button
+                onClick={isFollowLoading ? null : followUser}
+                className="h-8 text-textColor-lightGray border border-gray-300 hover:border-white hover:border-2"
+              >
+                {isFollowLoading ? (
+                  <Bounce />
+                ) : (
+                  <div className="flex">
+                    {amIFollower ? "Following" : "Follow"}
+                  </div>
+                )}
               </Button>
             )}
           </div>

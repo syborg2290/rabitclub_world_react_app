@@ -102,7 +102,7 @@ const UtilityBox = (props) => {
   // };
 
   return (
-    <div className="bg-dark mx-4 absolute z-1 top-10 right-0 w-2/7 h-3/4 rounded-md">
+    <div className="bg-dark mx-4 absolute z-1 top-10 right-0 w-2/7 h-auto rounded-md">
       <div className="p-5 text-textColor-lightGray self-center mx-auto rounded-md">
         <div className="flex justify-between">
           <h1 className="text-xl mb-5">Current Coordinates</h1>
@@ -171,7 +171,7 @@ const UtilityBox = (props) => {
             Create Pin
           </button>
         </div>
-        <div className="mt-5">
+        {/* <div className="mt-5">
           <button
             type="button"
             className="border border-white text-white p-1 rounded-md w-full outline-none hover:opacity-75"
@@ -181,7 +181,7 @@ const UtilityBox = (props) => {
               Create Video Space
             </div>
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
