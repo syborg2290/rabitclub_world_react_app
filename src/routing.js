@@ -14,11 +14,14 @@ import WatchPartyControlPage from "./pages/WatchPartyControlPage";
 import { setOnlineService } from "./services/user";
 import AlertModalContext from "./context/AlertContext";
 import AlertBox from "./components/common/AlertBox";
+import AllUsersModal from "./components/AllUsersModal";
+import AllUsersModalContext from "./context/AllUsersModalContext";
 
 function Routing() {
   const location = useLocation();
   const user = useContext(UserContext);
   const alertContext = useContext(AlertModalContext);
+  const allUsersContext = useContext(AllUsersModalContext);
 
   const changeStatusUser = async (status) => {
     await setOnlineService(status);
@@ -39,6 +42,14 @@ function Routing() {
                 show={alertContext.showAlertModal}
                 setShow={alertContext.setShowAlertModal}
                 alertText={alertContext.alertText}
+              />
+            )}
+
+            {allUsersContext.showAllUsersModal && (
+              <AllUsersModal
+                show={allUsersContext.showAllUsersModal}
+                setShow={allUsersContext.setShowAllUsersModal}
+                user={user}
               />
             )}
             <Routes location={location}>

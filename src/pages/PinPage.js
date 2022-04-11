@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Profile from "../assets/images/default.png";
 import TimeAgo from "timeago-react";
-import Spinner from "../components/common/loaders/Spinner";
 import LazyLoadingImage from "../components/LazyLoadingImage";
 import LongTextModal from "../components/LongTextModal";
 import NewPinModalContext from "../context/NewPinModalContext";
@@ -15,6 +14,7 @@ import CreatePinPostModal from "../components/CreatePinPostModal";
 import Button from "../components/common/Button";
 import { gun } from "../config";
 import PinPost from "../components/PinPost";
+import InitialLoader from "../components/common/loaders/InitialLoader";
 
 const PinPage = () => {
   const navigate = useNavigate();
@@ -94,7 +94,7 @@ const PinPage = () => {
     <>
       {isInitialLoading ? (
         <div className={"mx-auto self-center text-center mt-52"}>
-          <Spinner />
+          <InitialLoader />
         </div>
       ) : (
         <>

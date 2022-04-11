@@ -257,6 +257,31 @@ export const getAmIFollowingService = async (id) => {
   }
 };
 
+export const getAllUserService = async (page) => {
+  try {
+    const response = await axios.get(api_baseUrl + "allUsers/" + page, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return {
+        status: true,
+        result: response.data["users"],
+      };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
 export const updateProfileService = async (
   email,
   bio,

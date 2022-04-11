@@ -22,12 +22,12 @@ import { client, gun } from "../config";
 import PreviousActionContext from "../context/PreviousActionContext";
 import AuthModalContext from "../context/AuthModalContext";
 import Bounce from "../components/common/loaders/Bounce";
-import Spinner from "../components/common/loaders/Spinner";
 import Button from "../components/common/Button";
 import CropModal from "../components/CropModal";
 import { days } from "../utils/weekDays";
 import NewPinModalContext from "../context/NewPinModalContext";
 import { getCurrentDateService } from "../services/utils";
+import InitialLoader from "../components/common/loaders/InitialLoader";
 
 const NewLocationPage = (props) => {
   const navigate = useNavigate();
@@ -255,7 +255,7 @@ const NewLocationPage = (props) => {
       )}
       {isInitialLoading ? (
         <div className={"mx-auto self-center text-center mt-52"}>
-          <Spinner />
+          <InitialLoader />
         </div>
       ) : (
         <div className="flex flex-col justify-center items-center py-10">

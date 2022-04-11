@@ -161,7 +161,7 @@ const HomePage = () => {
           )}
           {!utilityBoxShow && (
             <div
-              className="bg-dark rounded-full p-2 hover:opacity-70 absolute z-1 top-10 right-0 mr-2"
+              className="bg-dark rounded-full p-2 hover:opacity-70 absolute z-1 top-10 right-0 mr-2 cursor-pointer"
               onClick={() => setUtilityBoxShow(true)}
             >
               <IoAppsOutline className="w-8 h-8 text-white" />

@@ -19,6 +19,7 @@ import {
 import Button from "./common/Button";
 import AuthModalContext from "../context/AuthModalContext";
 import UserContext from "../context/UserContext";
+import AllUsersModalContext from "../context/AllUsersModalContext";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Header = () => {
   const [searchType, setSearchType] = useState("Pin");
   const authModalContext = useContext(AuthModalContext);
   const user = useContext(UserContext);
+  const allUsersContext = useContext(AllUsersModalContext);
 
   const toggleUserDropdown = () => {
     if (userDropdownVisibilityClass === "hidden") {
@@ -71,7 +73,12 @@ const Header = () => {
 
         {user.user && (
           <>
-            <button className="px-1 py-1">
+            <button
+              className="px-1 py-1"
+              onClick={() => {
+                allUsersContext.setShowAllUsersModal(true);
+              }}
+            >
               <HiOutlineUsers className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>
             <button className="px-1 py-1">

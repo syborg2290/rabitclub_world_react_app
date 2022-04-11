@@ -17,7 +17,6 @@ import {
   getUserFromIdService,
   updateCoverPicService,
 } from "../services/user";
-import Spinner from "../components/common/loaders/Spinner";
 import EditProfileModal from "../components/EditProfileModal";
 import UserContext from "../context/UserContext";
 import UploadingLoader from "../components/common/loaders/UploadingLoader";
@@ -25,6 +24,7 @@ import LazyLoadingImage from "../components/LazyLoadingImage";
 import LongTextModal from "../components/LongTextModal";
 import { client } from "../config";
 import Bounce from "../components/common/loaders/Bounce";
+import InitialLoader from "../components/common/loaders/InitialLoader";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const ProfilePage = (props) => {
 
   const getAmIFollowing = async () => {
     const res = await getAmIFollowingService(location?.state?.userId);
-    if (res) {
+    if (res.status) {
       setAmIFollower(res.result);
     }
   };
@@ -294,7 +294,7 @@ const ProfilePage = (props) => {
         </div>
       ) : (
         <div className={"mx-auto self-center text-center mt-52"}>
-          <Spinner />
+          <InitialLoader />
         </div>
       )}
     </div>

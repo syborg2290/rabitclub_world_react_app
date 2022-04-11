@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { IoCloseCircleOutline, IoFilmOutline } from "react-icons/io5";
+import { IoCloseCircleOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import AuthModalContext from "../context/AuthModalContext";
 import NewPinModalContext from "../context/NewPinModalContext";
