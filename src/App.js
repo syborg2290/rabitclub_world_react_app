@@ -16,10 +16,12 @@ import NewPinModalContext from "./context/NewPinModalContext";
 import PreviousActionContext from "./context/PreviousActionContext";
 import AlertModalContext from "./context/AlertContext";
 import AllUsersModalContext from "./context/AllUsersModalContext";
+import ForgotPasswordModal from "./components/ForgotPasswordModal";
 
 function App() {
   const MINUTE_MS = 60000;
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [showAllUsersModal, setShowAllUsersModal] = useState(false);
   const [alertText, setAlertText] = useState("");
@@ -35,7 +37,9 @@ function App() {
   useEffect(() => {
     getUser();
     const interval = setInterval(async () => {
-      await setOnlineRequestTimeService();
+      if (user) {
+        await setOnlineRequestTimeService();
+      }
     }, MINUTE_MS);
 
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
@@ -72,6 +76,8 @@ function App() {
       value={{
         show: showAuthModal,
         setShow: setShowAuthModal,
+        showForgotPassword: showForgotPasswordModal,
+        setShowForgotPassword: setShowForgotPasswordModal,
       }}
     >
       <NewPinModalContext.Provider
@@ -119,6 +125,12 @@ function App() {
                 <BrowserRouter>
                   <Routing />
                   <AuthModal />
+                  <ForgotPasswordModal
+                    show={showForgotPasswordModal}
+                    setShow={setShowForgotPasswordModal}
+                    showAuth={showAuthModal}
+                    setShowAuth={setShowAuthModal}
+                  />
                   {/* <NewPinModal /> */}
                 </BrowserRouter>
               </AllUsersModalContext.Provider>

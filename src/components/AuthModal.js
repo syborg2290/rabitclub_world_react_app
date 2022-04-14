@@ -70,7 +70,7 @@ const AuthModal = () => {
                 setErrorText(res["result"]);
               }
             } else {
-              setErrorText("The passwod must be 8 characters or longer.");
+              setErrorText("Password must be 8 characters or longer.");
             }
           } else {
             setErrorText("Invalid email format!");
@@ -216,6 +216,17 @@ const AuthModal = () => {
                 />
               )}
             </div>
+            {modalType === "login" && (
+              <div
+                className="text-right mb-1 opacity-60 hover:opacity-100"
+                onClick={() => {
+                  modalContext.setShowForgotPassword(true);
+                  modalContext.setShow(false);
+                }}
+              >
+                <span className="text-sm cursor-pointer">Forgot password</span>
+              </div>
+            )}
           </label>
 
           <Button

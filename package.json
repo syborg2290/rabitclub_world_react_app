@@ -12,6 +12,7 @@
     "gun": "^0.2020.1235",
     "ipfs-http-client": "^56.0.1",
     "mapbox-gl": "^2.7.0",
+    "millify": "^4.0.0",
     "react": "^17.0.2",
     "react-beforeunload": "^2.5.2",
     "react-clickout-handler": "^1.2.1",

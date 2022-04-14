@@ -1,12 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   IoCropOutline,
+  IoLockClosedOutline,
   IoPencil,
   IoPencilOutline,
   IoReload,
   IoSaveOutline,
 } from "react-icons/io5";
 import { useLocation, useNavigate } from "react-router-dom";
+import millify from "millify";
 import Cover from "../assets/images/cover.jpg";
 import Profile from "../assets/images/default.png";
 import Button from "../components/common/Button";
@@ -18,57 +20,49 @@ import {
   updateCoverPicService,
 } from "../services/user";
 import EditProfileModal from "../components/EditProfileModal";
-import UserContext from "../context/UserContext";
 import UploadingLoader from "../components/common/loaders/UploadingLoader";
 import LazyLoadingImage from "../components/LazyLoadingImage";
 import LongTextModal from "../components/LongTextModal";
 import { client } from "../config";
 import Bounce from "../components/common/loaders/Bounce";
 import InitialLoader from "../components/common/loaders/InitialLoader";
+import PasswordChangeModal from "../components/PasswordChangeModal";
 
 const ProfilePage = (props) => {
   const navigate = useNavigate();
-  const currentUserInfo = useContext(UserContext);
   const location = useLocation();
   const [coverImage, setCoverImage] = useState(null);
   const [image, setImage] = useState(null);
   const [isLoadingCover, setIsUploadingCoverLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [cropModal, setCropModal] = useState(false);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const [viewDescModal, setViewDescModal] = useState(false);
   const [amIFollower, setAmIFollower] = useState(false);
+  const [changePasswordModal, setChangePasswordModal] = useState(false);
   const isLoggedUser = location?.state?.userId === props.user.userId;
 
   useEffect(() => {
     if (location.state === null) {
       navigate("/");
     } else {
-      if (isLoggedUser) {
-        let currentUser = currentUserInfo.userData;
-        setUserData(currentUser);
-        if (!isLoggedUser) {
-          getAmIFollowing();
-        }
-        if (currentUser?.cover_pic) {
-          setCoverImage(currentUser?.cover_pic);
-        }
-      } else {
-        getUserDetails();
-      }
+      getUserDetails();
     }
     // eslint-disable-next-line
-  }, []);
+  }, [location.state.userId]);
 
   const getUserDetails = async () => {
     const user = await getUserFromIdService(location?.state?.userId);
     if (user) {
       const userDataRes = user.result.user;
       setUserData(userDataRes);
+      await getAmIFollowing();
       if (userDataRes?.cover_pic) {
         setCoverImage(userDataRes?.cover_pic);
       }
+      setIsInitialLoading(false);
     }
   };
 
@@ -119,6 +113,7 @@ const ProfilePage = (props) => {
       const res = await followingUserService(location?.state?.userId);
       if (res.status) {
         setUserData(res.result);
+        await getAmIFollowing();
         setIsFollowLoading(false);
       } else {
         setIsFollowLoading(false);
@@ -147,6 +142,12 @@ const ProfilePage = (props) => {
         setShow={setEditProfileModal}
         setUser={setUserData}
       />
+      {changePasswordModal && (
+        <PasswordChangeModal
+          show={changePasswordModal}
+          setShow={setChangePasswordModal}
+        />
+      )}
       {viewDescModal && userData && userData?.bio && (
         <LongTextModal
           show={viewDescModal}
@@ -154,6 +155,7 @@ const ProfilePage = (props) => {
           text={userData?.bio}
         />
       )}
+
       {isLoadingCover ? (
         <div className="h-screen">
           <div
@@ -165,7 +167,7 @@ const ProfilePage = (props) => {
             <UploadingLoader />
           </div>
         </div>
-      ) : userData ? (
+      ) : userData && !isInitialLoading ? (
         <div className="flex flex-col pb-5">
           <div className="relative flex flex-col mb-7">
             <div className="flex flex-col justify-center items-center">
@@ -174,18 +176,49 @@ const ProfilePage = (props) => {
                 src={coverImage ? coverImage : Cover}
                 alt=""
               />
+              {isLoggedUser && (
+                <div
+                  className="text-white self-end m-2 border cursor-pointer border-textColor-lightGray 
+                rounded-md opacity-50 hover:opacity-100"
+                  onClick={() => setChangePasswordModal(true)}
+                >
+                  <span className="p-2 text-sm flex">
+                    <IoLockClosedOutline className="self-center mr-1" />
+                    Change password
+                  </span>
+                </div>
+              )}
               <LazyLoadingImage
                 image={
                   userData.profile_pic_medium
                     ? userData.profile_pic_medium
                     : Profile
                 }
-                className="rounded-full w-32 h-32 -mt-10 shadow-xl border-2 border-white p-1 m-1"
+                className="rounded-full w-32 h-32 -mt-20 shadow-xl border-2 border-white p-1 m-1"
               />
             </div>
-            <h1 className="font-bold text-white text-3xl text-center mt-3">
+
+            <h1 className="font-bold text-white text-3xl text-center mt-1">
               {userData && "@" + userData?.username}
             </h1>
+            <div className="flex self-center text-textColor-lightGray my-1 text-sm">
+              <div className="mx-2">
+                <div className="flex align-middle justify-center">
+                  <span className="font-bold">
+                    {millify(userData.followers)}
+                  </span>
+                </div>
+                <span className="opacity-50">Followers</span>
+              </div>
+              <div className="mx-2">
+                <div className="flex align-middle justify-center">
+                  <span className="font-bold">
+                    {millify(userData.following)}
+                  </span>
+                </div>
+                <span className="opacity-50">Followings</span>
+              </div>
+            </div>
             {userData?.bio && (
               <div className="flex justify-center align-middle">
                 <p

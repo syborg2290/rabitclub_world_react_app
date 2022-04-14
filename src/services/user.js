@@ -47,6 +47,87 @@ export const loginService = async (username, password) => {
   }
 };
 
+export const sendForgotPasswordCodeService = async (username) => {
+  try {
+    const data = { username };
+    const response = await axios.post(
+      api_baseUrl + "sendForgotPasswordCode",
+      data,
+      {
+        withCredentials: true,
+      }
+    );
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const changeForgotPasswordCodeService = async (
+  username,
+  newPassword,
+  code
+) => {
+  try {
+    const data = { username, newPassword, code };
+    const response = await axios.post(
+      api_baseUrl + "changeForgotPassword",
+      data,
+      {
+        withCredentials: true,
+      }
+    );
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const changePasswordService = async (password, newPassword) => {
+  try {
+    const data = { password, newPassword };
+    const response = await axios.post(api_baseUrl + "changePassword", data, {
+      withCredentials: true,
+    });
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return { status: true, result: response.data["result"] };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
 export const setLoggedService = async (status) => {
   try {
     const data = { status };
@@ -274,6 +355,32 @@ export const getAllUserService = async (page) => {
       return {
         status: true,
         result: response.data["users"],
+      };
+    }
+    return { status: false, result: response.data["message"] };
+  } catch (error) {
+    return { status: false, result: "Something went wrong, try again!" };
+  }
+};
+
+export const searchUsersService = async (text) => {
+  try {
+    const response = await axios.get(api_baseUrl + "searchUsers/" + text, {
+      withCredentials: true,
+    });
+
+    if (
+      response.statusCode === 500 ||
+      response.statusCode === 400 ||
+      response.statusCode === 404
+    ) {
+      return { status: false, result: "Something went wrong, try again!" };
+    }
+
+    if (response.data["message"] === "done") {
+      return {
+        status: true,
+        result: response.data["result"],
       };
     }
     return { status: false, result: response.data["message"] };
