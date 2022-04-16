@@ -48,22 +48,24 @@ const AuthModal = () => {
                 username.trim()
               );
               if (res["status"] === true) {
-                localStorage.setItem("logoutStatus", "false");
-                modalContext.setShow(false);
-                user.setUser(username.trim());
-                user.setUserId(res.result._id);
-                user.setUserData(res.result);
-                clearData();
-                setIsLoading(false);
-                if (previousActionContext.previousAction.path) {
-                  navigate(previousActionContext.previousAction.path, {
-                    state: {
-                      latitude:
-                        previousActionContext.previousAction.values.latitude,
-                      longitude:
-                        previousActionContext.previousAction.values.longitude,
-                    },
-                  });
+                const resSetLogged = await setLoggedService(true);
+                if (resSetLogged["status"] === true) {
+                  modalContext.setShow(false);
+                  user.setUser(username.trim());
+                  user.setUserId(res.result._id);
+                  user.setUserData(res.result);
+                  clearData();
+                  setIsLoading(false);
+                  if (previousActionContext.previousAction.path) {
+                    navigate(previousActionContext.previousAction.path, {
+                      state: {
+                        latitude:
+                          previousActionContext.previousAction.values.latitude,
+                        longitude:
+                          previousActionContext.previousAction.values.longitude,
+                      },
+                    });
+                  }
                 }
               } else {
                 setIsLoading(false);
@@ -107,34 +109,16 @@ const AuthModal = () => {
         setIsLoading(true);
         const res = await loginService(username.trim(), password.trim());
         if (res["status"] === true) {
-          if (
-            localStorage.getItem("logoutStatus") === null ||
-            localStorage.getItem("logoutStatus") === "false"
-          ) {
+          const resSetLogged = await setLoggedService(true);
+          if (resSetLogged["status"] === true) {
             modalContext.setShow(false);
             user.setUser(username.trim());
             user.setUserId(res.result._id);
             user.setUserData(res.result);
             commonLogin();
           } else {
-            if (!res.result.isAlreadyLogged) {
-              const resSetLogged = await setLoggedService(true);
-              if (resSetLogged["status"] === true) {
-                localStorage.setItem("logoutStatus", "false");
-                modalContext.setShow(false);
-                user.setUser(username.trim());
-                user.setUserId(res.result._id);
-                user.setUserData(res.result);
-                commonLogin();
-              } else {
-                setIsLoading(false);
-                setErrorText("Something went wrong, please try again");
-              }
-            } else {
-              setIsLoading(false);
-              //send security email
-              setErrorText("Oops, already logged in with this account!");
-            }
+            setIsLoading(false);
+            setErrorText("Something went wrong, please try again");
           }
         } else {
           setIsLoading(false);

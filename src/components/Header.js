@@ -81,7 +81,12 @@ const Header = () => {
             >
               <HiOutlineUsers className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>
-            <button className="px-1 py-1">
+            <button
+              className="px-1 py-1"
+              onClick={() => {
+                navigate("/messenger");
+              }}
+            >
               <HiOutlineChat className="text-gray-500 w-6 h-6 mx-2 hover:text-gray-300" />
             </button>
             <button className="px-1 py-1">

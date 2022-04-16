@@ -63,7 +63,6 @@ function App() {
     if (resSetOnline["status"] === true) {
       const resSetLogged = await setLoggedService(false);
       if (resSetLogged["status"] === true) {
-        localStorage.setItem("logoutStatus", "true");
         await logoutService();
         setUser(null);
         setUserId(null);

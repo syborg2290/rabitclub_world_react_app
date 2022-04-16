@@ -16,6 +16,8 @@ import AlertModalContext from "./context/AlertContext";
 import AlertBox from "./components/common/AlertBox";
 import AllUsersModal from "./components/AllUsersModal";
 import AllUsersModalContext from "./context/AllUsersModalContext";
+import MessengerPage from "./pages/MessengerPage";
+import ChatPage from "./pages/ChatPage";
 
 function Routing() {
   const location = useLocation();
@@ -79,6 +81,27 @@ function Routing() {
                   user.user ? <PinPage user={user} /> : <Navigate to="/" />
                 }
               />
+
+              <Route
+                exact
+                path="/messenger/"
+                element={
+                  user.user ? (
+                    <MessengerPage user={user} />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+
+              <Route
+                exact
+                path="/chat=:user"
+                element={
+                  user.user ? <ChatPage user={user} /> : <Navigate to="/" />
+                }
+              />
+
               <Route
                 exact
                 path="/watch-party/"
@@ -90,6 +113,7 @@ function Routing() {
                   )
                 }
               />
+
               <Route
                 exact
                 path="/watch-party-room/"

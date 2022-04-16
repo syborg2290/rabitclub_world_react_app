@@ -55,7 +55,7 @@ const ProfilePage = (props) => {
 
   const getUserDetails = async () => {
     const user = await getUserFromIdService(location?.state?.userId);
-    if (user) {
+    if (user.status) {
       const userDataRes = user.result.user;
       setUserData(userDataRes);
       await getAmIFollowing();
